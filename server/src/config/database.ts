@@ -1,5 +1,7 @@
-import { Pool, PoolConfig } from 'pg';
+import type { PoolConfig } from 'pg';
 import dotenv from 'dotenv';
+import pkg from 'pg';
+const { Pool } = pkg;
 
 dotenv.config();
 
@@ -20,7 +22,14 @@ const dbConfig: DatabaseConfig = {
   port: parseInt(process.env.DB_PORT || '5432'),
   database: process.env.DB_NAME || 'auth_db',
   // for security and performance
-  ssl: process.env.NODE_ENV === 'production',
+  // below line determines whether or not to use SSL (Secure Sockets Layer) to encrypt data between
+  // application and database - crucial for production environments, especially with cloud databases
+  // for local development is not necessary
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  // ssl:
+  //   process.env.NODE_ENV === 'production'
+  //     ? { rejectUnauthorized: false }
+  //     : false,
   max: 20, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000,
 };
@@ -39,7 +48,10 @@ pool.on('error', (err) => {
 });
 
 // Export query helper function
-export const query = async (text: string, params?: (string | number)[]) => {
+export const query = async (
+  text: string,
+  params?: (string | number | boolean)[]
+) => {
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
@@ -55,7 +67,7 @@ export const query = async (text: string, params?: (string | number)[]) => {
 // Export pool for transactions or when you need direct access
 export const getPool = () => pool;
 
-export default {
-  query,
-  getPool,
-};
+// export default {
+//   query,
+//   getPool,
+// };
