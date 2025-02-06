@@ -1,12 +1,11 @@
 import express, { Router } from 'express';
-// import { Router } from 'express';
 import type {
   Request,
   Response,
   // NextFunction,
   // ErrorRequestHandler,
 } from 'express';
-import formBasedController from '@/controllers/formBasedController';
+import formBasedController from '../controllers/formBasedController';
 
 const router: Router = express.Router();
 
@@ -26,18 +25,18 @@ router.post(
 );
 
 // login route
-// router.post(
-//   '/login',
-//   formBasedController.validateLoginData,
-//   formBasedController.authenticateUser,
-//   (_req: Request, res: Response) => {
-//     res.status(200).json({
-//       message: 'Login successful',
-//       token: res.locals.token,
-//       user: res.locals.user,
-//     });
-//   }
-// );
+router.post(
+  '/login',
+  formBasedController.validateLoginData,
+  formBasedController.authenticateUser,
+  (_req: Request, res: Response) => {
+    res.status(200).json({
+      message: 'Login successful',
+      token: res.locals.token,
+      user: res.locals.user,
+    });
+  }
+);
 // router.post('/forgot-password', ...);
 
 export default router;
