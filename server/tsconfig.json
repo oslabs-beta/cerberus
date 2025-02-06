@@ -37,7 +37,8 @@
       "@models/*": ["./models/*"],
       "@routes/*": ["./routes/*"],
       "@services/*": ["./services/*"],
-      "@utils/*": ["./utils/*"]
+      "@utils/*": ["./utils/*"],
+      "@config/*": ["./config/*"]
     }
   },
   "include": ["src/**/*"],
