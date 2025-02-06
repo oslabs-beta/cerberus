@@ -1,31 +1,89 @@
+// import userModel from '@/models/db';
+import userModel from '../models/db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-// import db from
+import type { JwtPayload } from 'jsonwebtoken';
 import type {
   Request,
   Response,
   NextFunction,
-  ErrorRequestHandler,
+  // ErrorRequestHandler,
 } from 'express';
 
-const formBasedController = {};
+interface DecodedToken extends JwtPayload {
+  userId: number;
+  email?: string;
+}
+
+interface FormBasedController {
+  validateRegistration: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => void;
+  checkExistingUser: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  hashPassword: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  createUser: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  createMongoUser: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  rollbackSupabaseUser: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  validateLoginData: (req: Request, res: Response, next: NextFunction) => void;
+  authenticateUser: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  verifyToken: (req: Request, res: Response, next: NextFunction) => void;
+}
+
+const formBasedController: FormBasedController = {
+  validateRegistration: (req, res, next) => {},
+  checkExistingUser: async (req, res, next) => {},
+  hashPassword: async (req, res, next) => {},
+  createUser: async (req, res, next) => {},
+  createMongoUser: async (req, res, next) => {},
+  rollbackSupabaseUser: async (req, res, next) => {},
+  validateLoginData: (req, res, next) => {},
+  authenticateUser: async (req, res, next) => {},
+  verifyToken: (req, res, next) => {},
+};
 
 // Here we have our collection of middleware functions, typically grouped around a specific topic
 
 // validating incoming user data
-formBasedController.validateSignupData = (req, res, next) => {
-  const { fname, email, password } = req.body;
+formBasedController.validateRegistration = (req, _res, next) => {
+  // include below fname if fname is an option
+  const { email, password } = req.body;
 
   // Server-side validation (always validate on server even if client validates)
-  if (!fname || fname.length > 50) {
-    return next({
-      log: 'Invalid first name',
-      status: 400,
-      message: {
-        error: 'First name is required and must be less than 50 characters',
-      },
-    });
-  }
+  // if (!fname || fname.length > 50) {
+  //   return next({
+  //     log: 'Invalid first name',
+  //     status: 400,
+  //     message: {
+  //       error: 'First name is required and must be less than 50 characters',
+  //     },
+  //   });
+  // }
 
   if (
     !email ||
@@ -47,6 +105,20 @@ formBasedController.validateSignupData = (req, res, next) => {
     });
   }
 
+  // Check for at least one uppercase letter, one number, and one special character
+  const passwordRegex =
+    /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_+=[\]{};:'"\\|,.<>/?])[A-Za-z\d!@#$%^&*()\-_+=[\]{};:'"\\|,.<>/?]{8,72}$/;
+  if (!passwordRegex.test(password)) {
+    return next({
+      log: 'Invalid password',
+      status: 400,
+      message: {
+        error:
+          'Password must contain at least one uppercase letter, one number, and one special character',
+      },
+    });
+  }
+
   next();
 };
 
@@ -55,10 +127,9 @@ formBasedController.checkExistingUser = async (req, res, next) => {
   const { email } = req.body;
 
   try {
-    const query = 'SELECT email FROM users WHERE email = $1';
-    const result = await db.query(query, [email]);
+    const existingUser = await userModel.getUserByEmail(email);
 
-    if (result.rows.length > 0) {
+    if (existingUser) {
       return next({
         log: 'User already exists',
         status: 409,
@@ -78,7 +149,7 @@ formBasedController.checkExistingUser = async (req, res, next) => {
 // hash password
 formBasedController.hashPassword = async (req, res, next) => {
   try {
-    const saltRounds = 10;
+    const saltRounds = Number(process.env.SALT_ROUNDS) || 10;
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     res.locals.hashedPassword = hashedPassword;
     next();
@@ -91,98 +162,26 @@ formBasedController.hashPassword = async (req, res, next) => {
   }
 };
 
-// creates user in Supabase database
+// creates user in PostgreSQL database
 formBasedController.createUser = async (req, res, next) => {
   const { fname, email } = req.body;
   const hashedPassword = res.locals.hashedPassword;
 
   try {
-    const query = `
-      INSERT INTO users (
-        first_name, 
-        email, 
-        password_hash,
-        is_active,
-        email_verified,
-        created_at
-      )
-      VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
-      RETURNING id, first_name, email, created_at
-    `;
-
-    const result = await db.query(query, [
-      fname,
-      email,
-      hashedPassword,
-      true, // is_active
-      false, // email_verified (implement email verification later)
-    ]);
+    const user = await userModel.createUser(email, hashedPassword, fname);
 
     // Store user data (except password) in res.locals
-    // Understand better this HERE:
-    res.locals.user = result.rows[0];
+    res.locals.user = {
+      id: user.id,
+      email: user.email,
+      created_at: user.created_at,
+    };
     next();
   } catch (error) {
     return next({
       log: 'Error creating user: ' + error,
       status: 500,
       message: { error: 'An error occurred while creating your account' },
-    });
-  }
-};
-
-// middleware here creates user in MongoDB
-formBasedController.createMongoUser = async (req, res, next) => {
-  try {
-    // At this point, res.locals.user should contain the Supabase user data
-    // including the user's ID from Supabase
-    const supabaseUser = res.locals.user;
-
-    if (!supabaseUser || !supabaseUser.id) {
-      throw new Error('Supabase user data missing');
-    }
-
-    // Create a new MongoDB user document
-    const newMongoUser = new User({
-      supabase_id: supabaseUser.id,
-    });
-
-    // Save the user to MongoDB
-    const savedUser = await newMongoUser.save();
-
-    // Add MongoDB user data to res.locals for potential use in subsequent middleware
-    res.locals.mongoUser = savedUser;
-
-    next();
-  } catch (error) {
-    return next({
-      log: 'Error creating MongoDB user: ' + error,
-      status: 500,
-      message: { error: 'An error occurred while setting up your account' },
-    });
-  }
-};
-
-// Optional: Add a rollback function in case MongoDB user creation fails
-formBasedController.rollbackSupabaseUser = async (req, res, next) => {
-  try {
-    // If we have a Supabase user but MongoDB creation failed
-    if (res.locals.user && !res.locals.mongoUser) {
-      const query = 'DELETE FROM users WHERE id = $1';
-      await db.query(query, [res.locals.user.id]);
-
-      return next({
-        log: 'Rolled back Supabase user creation due to MongoDB failure',
-        status: 500,
-        message: { error: 'An error occurred while setting up your account' },
-      });
-    }
-    next();
-  } catch (error) {
-    return next({
-      log: 'Error in rollback: ' + error,
-      status: 500,
-      message: { error: 'A critical error occurred during account creation' },
     });
   }
 };
@@ -213,21 +212,18 @@ formBasedController.validateLoginData = (req, res, next) => {
 // Authenticate user
 formBasedController.authenticateUser = async (req, res, next) => {
   const { email, password } = req.body;
+  let user;
 
   try {
-    // Get user from database
-    const query = 'SELECT * FROM users WHERE email = $1 AND is_active = true';
-    const result = await db.query(query, [email]);
+    user = await userModel.getUserByEmail(email);
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return next({
         log: 'User not found',
         status: 401,
         message: { error: 'Invalid email or password' },
       });
     }
-
-    const user = result.rows[0];
 
     // Compare password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
@@ -240,27 +236,40 @@ formBasedController.authenticateUser = async (req, res, next) => {
       });
     }
 
+    // Record the login
+    const ipAddress = req.ip || 'unknown';
+    await userModel.recordLogin(user.id, ipAddress, true);
+
     // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return next({
+        log: 'JWT secret is not defined',
+        status: 500,
+        message: { error: 'Internal server error' },
+      });
+    }
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, jwtSecret, {
+      expiresIn: '24h',
+    });
 
     // Remove sensitive data before sending
     const safeUser = {
       id: user.id,
-      first_name: user.first_name,
       email: user.email,
       created_at: user.created_at,
     };
 
-    // Store user data and token in res.locals
     res.locals.user = safeUser;
     res.locals.token = token;
 
     next();
   } catch (error) {
+    if (user) {
+      await userModel.recordLogin(user.id, req.ip || 'unknown', false);
+    }
+
     return next({
       log: 'Error in authenticateUser: ' + error,
       status: 500,
@@ -282,7 +291,16 @@ formBasedController.verifyToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return next({
+        log: 'JWT secret is not defined',
+        status: 500,
+        message: { error: 'Internal server error' },
+      });
+    }
+    const decoded = jwt.verify(token, jwtSecret) as DecodedToken;
+    // const decoded = jwt.verify(token, jwtSecret);
     res.locals.userId = decoded.userId;
     next();
   } catch (error) {
