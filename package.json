@@ -14,7 +14,12 @@
     "preview": "cd client && vite preview",
     "start": "node --experimental-specifier-resolution=node server/dist/server.js"
   },
-  "dependencies": {
+ "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.1.1",
+    "@mui/icons-material": "^6.4.2",
+    "@mui/material": "^6.4.2",
     "@types/pg": "^8.11.11",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",
@@ -23,8 +28,8 @@
     "pg": "^8.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
+},
+ "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
@@ -33,11 +38,14 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.2",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^4.0.3",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
