@@ -15,7 +15,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const theme = createTheme();
 
-export default function SignUp() {
+export default function ForgotPW() {
   //function that is called when form submitted, event param is the form submission event
   const handleSubmit = (event) => {
     //prevent page from reloading
@@ -31,11 +31,11 @@ export default function SignUp() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Container component='main' maxWidth='xs'>
+      <Container component='main' maxWidth='xs' disableGutters>
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 8,
+            marginTop: 15,
             marginBottom: 10,
             display: 'flex',
             flexDirection: 'column',
@@ -50,7 +50,7 @@ export default function SignUp() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component='h1' variant='h5' color='black'>
-            Sign up
+            Forgot your password?
           </Typography>
           <Box
             component='form'
@@ -58,62 +58,15 @@ export default function SignUp() {
             onSubmit={handleSubmit}
             sx={{ mt: 3 }}
           >
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  autoComplete='given-name'
-                  name='firstName'
-                  required
-                  fullWidth
-                  id='firstName'
-                  label='First Name'
-                  autoFocus
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id='lastName'
-                  label='Last Name'
-                  name='lastName'
-                  autoComplete='family-name'
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id='email'
-                  label='Email Address'
-                  name='email'
-                  autoComplete='email'
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name='password'
-                  label='Password'
-                  type='password'
-                  id='password'
-                  autoComplete='new-password'
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox value='allowExtraEmails' color='primary' />
-                  }
-                  label={
-                    <Typography sx={{ color: 'black' }}>
-                      I want to receive marketing promotions and updates via
-                      email.
-                    </Typography>
-                  }
-                />
-              </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                id='email'
+                label='Email Address'
+                name='email'
+                autoComplete='email'
+              />
             </Grid>
             <Button
               type='submit'
@@ -121,12 +74,12 @@ export default function SignUp() {
               variant='contained'
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign Up
+              Submit
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
                 <Link href='#' variant='body2'>
-                  Already have an account? Sign in
+                  Need an account? Sign-up here
                 </Link>
               </Grid>
             </Grid>

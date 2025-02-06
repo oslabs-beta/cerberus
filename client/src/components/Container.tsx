@@ -1,6 +1,9 @@
 import React from 'react';
 import '../styles/container.css';
 import { useState } from 'react';
+import SignUp from './Sign-up';
+import Login from './login';
+import ForgotPW from './Forgot-PW';
 
 const Container = () => {
   const [open, setOpen] = React.useState(false);
@@ -37,6 +40,11 @@ const Container = () => {
           </li>
         </ul>
       ) : null}
+      <div className='bottom-container'>
+        {/* <SignUp></SignUp> */}
+        {/* <Login></Login> */}
+        <ForgotPW></ForgotPW>
+      </div>
     </div>
   );
 };
