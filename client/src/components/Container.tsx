@@ -41,9 +41,9 @@ const Container = () => {
         </ul>
       ) : null}
       <div className='bottom-container'>
-        {/* <SignUp></SignUp> */}
+        <SignUp></SignUp>
         {/* <Login></Login> */}
-        <ForgotPW></ForgotPW>
+        {/* <ForgotPW></ForgotPW> */}
       </div>
     </div>
   );
