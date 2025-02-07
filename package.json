@@ -14,7 +14,7 @@
     "preview": "cd client && vite preview",
     "start": "node --experimental-specifier-resolution=node server/dist/server.js"
   },
- "dependencies": {
+  "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.1.1",
@@ -28,8 +28,8 @@
     "pg": "^8.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
-},
- "devDependencies": {
+  },
+  "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
@@ -44,9 +44,9 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
+    "nodemon": "^3.1.9",
     "postcss": "^8.5.1",
     "tailwindcss": "^4.0.3",
-    "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "~5.6.2",
