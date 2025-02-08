@@ -11,15 +11,17 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
+//login fetch request
+
 const theme = createTheme();
 
 const useInput = (init: any) => {
-  const [ value, setValue ] = useState(init);
+  const [value, setValue] = useState(init);
   const onChange = (e: any) => {
     setValue(e.target.value);
   };
   // return the value with the onChange function instead of setValue function
-  return [ value, onChange ];
+  return [value, onChange];
 };
 
 export default function Login() {
@@ -30,10 +32,10 @@ export default function Login() {
   const handleSubmit = (event: any) => {
     //prevent page from reloading
     event.preventDefault();
-    
+
     if (!email || !password) {
       setEmptyError(true);
-    };
+    }
   };
 
   return (
@@ -75,7 +77,9 @@ export default function Login() {
                 name='email'
                 autoComplete='email'
               />
-              {!email && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
+              {!email && emptyError ? (
+                <Typography color='darkRed'>Required</Typography>
+              ) : null}
             </Grid>
             <Grid item xs={12} sx={{ margin: 2 }}>
               <TextField
@@ -88,7 +92,9 @@ export default function Login() {
                 id='password'
                 autoComplete='new-password'
               />
-              {!password && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
+              {!password && emptyError ? (
+                <Typography color='darkRed'>Required</Typography>
+              ) : null}
             </Grid>
             <Button
               type='submit'
