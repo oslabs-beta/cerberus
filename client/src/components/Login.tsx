@@ -11,8 +11,6 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
-//login fetch request
-
 const theme = createTheme();
 
 const useInput = (init: any) => {
@@ -28,6 +26,25 @@ export default function Login() {
   const [email, emailOnChange] = useInput('');
   const [password, passwordOnChange] = useInput('');
   const [emptyError, setEmptyError] = useState(false);
+
+  const body = {
+    email,
+    password,
+  };
+  //login fetch request
+  fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'Application/JSON',
+    },
+    body: JSON.stringify(body),
+  })
+    .then((resp) => resp.json())
+    .then((data) => {
+      console.log(data);
+    })
+    .catch((err) => console.log('Login fetch /: ERROR:', err));
+
   //function that is called when form submitted, event param is the form submission event
   const handleSubmit = (event: any) => {
     //prevent page from reloading

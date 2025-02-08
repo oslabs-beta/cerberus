@@ -7,6 +7,7 @@ import ForgotPW from './Forgot-PW';
 
 const Container = () => {
   const [open, setOpen] = React.useState(false);
+  const [isSignedUp, setIsSignedUp] = React.useState(false);
 
   const handleOpen = () => {
     setOpen(!open);
@@ -41,7 +42,12 @@ const Container = () => {
         </ul>
       ) : null}
       <div className='bottom-container'>
-        <SignUp></SignUp>
+        {/* <SignUp></SignUp> */}
+        {isSignedUp ? (
+          <Login />
+        ) : (
+          <SignUp onSignUpSuccess={() => setIsSignedUp(true)} />
+        )}
         {/* <Login></Login> */}
         {/* <ForgotPW></ForgotPW> */}
       </div>

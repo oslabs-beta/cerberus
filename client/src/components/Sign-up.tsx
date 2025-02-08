@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { on } from 'events';
 
 const theme = createTheme();
 
@@ -24,12 +25,13 @@ const useInput = (init: any) => {
   return [value, onChange];
 };
 
-export default function SignUp() {
+export default function SignUp({ onSignUpSuccess }) {
   const [firstName, firstNameOnChange] = useInput('');
   const [lastName, lastNameOnChange] = useInput('');
   const [email, emailOnChange] = useInput('');
   const [password, passwordOnChange] = useInput('');
   const [emptyError, setEmptyError] = useState(false);
+  // const [isSignedUp, setIsSignedUp] = useState(false);
 
   //function that is called when form submitted, event param is the form submission event
   const handleSubmit = (event: any) => {
@@ -43,6 +45,7 @@ export default function SignUp() {
 
     if (!firstName || !lastName || !email || !password) {
       setEmptyError(true);
+      return;
     }
 
     const body = {
@@ -64,6 +67,8 @@ export default function SignUp() {
       .then((resp) => resp.json())
       .then((data) => {
         console.log(data);
+        //calls the function from container when successful signup
+        onSignUpSuccess();
       })
       .catch((err) => console.log('Signup fetch /: ERROR:', err));
   };
@@ -98,7 +103,7 @@ export default function SignUp() {
             sx={{ mt: 3 }}
           >
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              {/* <Grid item xs={12} sm={6}>
                 <TextField
                   autoComplete='given-name'
                   name='firstName'
@@ -112,8 +117,8 @@ export default function SignUp() {
                 {!firstName && emptyError ? (
                   <Typography color='darkRed'>Required</Typography>
                 ) : null}
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Grid> */}
+              {/* <Grid item xs={12} sm={6}>
                 <TextField
                   required
                   fullWidth
@@ -126,7 +131,7 @@ export default function SignUp() {
                 {!lastName && emptyError ? (
                   <Typography color='darkRed'>Required</Typography>
                 ) : null}
-              </Grid>
+              </Grid> */}
               <Grid item xs={12}>
                 <TextField
                   required
