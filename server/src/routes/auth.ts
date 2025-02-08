@@ -13,12 +13,13 @@ router.post(
   '/register',
   formBasedController.validateRegistration,
   formBasedController.checkExistingUser,
-  formBasedController.hashPassword, // hash password in order to store in the our database
-  formBasedController.createUser, // creates user in PostgreSQL database
+  formBasedController.hashPassword, // hash password before storing it in our database
+  formBasedController.createUser, // stores user information in PostgreSQL database
   (_req: Request, res: Response) => {
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       message: 'Registration successful',
+      // do we really need to send user information back to frontend? CHECK
       user: res.locals.user,
     });
   }
@@ -32,11 +33,17 @@ router.post(
   (_req: Request, res: Response) => {
     res.status(200).json({
       message: 'Login successful',
-      token: res.locals.token,
       user: res.locals.user,
+      expiresAt: res.locals.expiresAt, // e.g. numeric timestamp  (implement this as well so React can store this?)
     });
   }
 );
-// router.post('/forgot-password', ...);
+// router.post(
+//   '/forgot-password',
+//   formBasedController.sendEmailPassReset,
+//   (_req: Request, res: Response) => {
+//     res.status(200).json({});
+//   }
+// );
 
 export default router;

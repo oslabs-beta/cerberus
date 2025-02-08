@@ -4,9 +4,6 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import authRouter from './routes/auth';
 import { errorHandler } from './middlewares/errorHandler';
-// import registerRoute from './routes/registerRoute';
-// import loginRoute from './routes/loginRoute';
-// import forgotPasswordRoute from './routes/forgotPasswordRoute';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,6 +14,8 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+// Trust the proxy (to correctly get user's IP address after deployed behind a proxy)
+app.set('trust proxy', true);
 
 /**
  * Automatically parse urlencoded body content and form data from incoming requests and place it
