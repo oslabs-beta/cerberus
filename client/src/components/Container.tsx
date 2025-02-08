@@ -2,7 +2,7 @@ import React from 'react';
 import '../styles/container.css';
 import { useState } from 'react';
 import SignUp from './Sign-up';
-import Login from './login';
+import Login from './Login';
 import ForgotPW from './Forgot-PW';
 
 const Container = () => {

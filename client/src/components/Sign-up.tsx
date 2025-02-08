@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -15,18 +15,57 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const theme = createTheme();
 
+const useInput = (init: any) => {
+  const [ value, setValue ] = useState(init);
+  const onChange = (e: any) => {
+    setValue(e.target.value);
+  };
+  // return the value with the onChange function instead of setValue function
+  return [ value, onChange ];
+};
+
 export default function SignUp() {
+  const [firstName, firstNameOnChange] = useInput('');
+  const [lastName, lastNameOnChange] = useInput('');
+  const [email, emailOnChange] = useInput('');
+  const [password, passwordOnChange] = useInput('');
+  const [emptyError, setEmptyError] = useState(false);
+
   //function that is called when form submitted, event param is the form submission event
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: any) => {
     //prevent page from reloading
     event.preventDefault();
-    //collect and store data using FormData object, event.currentTargetis the form elem that triggered submit event
-    const data = new FormData(event.currentTarget);
     //logs extracted values
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    console.log(firstName);
+    console.log(lastName);
+    console.log(email);
+    console.log(password);
+
+    if (!firstName || !lastName || !email || !password) {
+      setEmptyError(true);
+    };
+
+    const body = {
+      firstName,
+      lastName,
+      email,
+      password,
+    };
+
+    console.log("body", body);
+
+    fetch('/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'Application/JSON',
+      },
+      body: JSON.stringify(body),
+    })
+    .then(resp => resp.json())
+    .then((data) => {
+      console.log(data);
+    })
+    .catch(err => console.log('Signup fetch /: ERROR:', err));
   };
 
   return (
@@ -67,8 +106,10 @@ export default function SignUp() {
                   fullWidth
                   id='firstName'
                   label='First Name'
+                  onChange={firstNameOnChange}
                   autoFocus
                 />
+                {!firstName && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -76,9 +117,11 @@ export default function SignUp() {
                   fullWidth
                   id='lastName'
                   label='Last Name'
+                  onChange={lastNameOnChange}
                   name='lastName'
                   autoComplete='family-name'
                 />
+                {!lastName && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
               </Grid>
               <Grid item xs={12}>
                 <TextField
@@ -86,9 +129,11 @@ export default function SignUp() {
                   fullWidth
                   id='email'
                   label='Email Address'
+                  onChange={emailOnChange}
                   name='email'
                   autoComplete='email'
                 />
+                {!email && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
               </Grid>
               <Grid item xs={12}>
                 <TextField
@@ -96,10 +141,12 @@ export default function SignUp() {
                   fullWidth
                   name='password'
                   label='Password'
+                  onChange={passwordOnChange}
                   type='password'
                   id='password'
                   autoComplete='new-password'
                 />
+                {!password && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
