@@ -1,5 +1,5 @@
 // middlewares/errorHandler.ts
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 interface ErrorMessage {
   error: string;
@@ -14,8 +14,9 @@ interface CustomError extends Error {
 export const errorHandler = (
   err: CustomError,
   _req: Request,
-  res: Response
-): Response => {
+  res: Response,
+  _next: NextFunction
+): void => {
   // Define a default error structure
   const defaultErr: CustomError = {
     name: 'ServerError',
