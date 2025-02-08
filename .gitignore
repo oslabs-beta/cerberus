@@ -23,4 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-## Add .env and so on
+## Env
+.env
