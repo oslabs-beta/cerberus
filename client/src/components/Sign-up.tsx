@@ -16,12 +16,12 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 const theme = createTheme();
 
 const useInput = (init: any) => {
-  const [ value, setValue ] = useState(init);
+  const [value, setValue] = useState(init);
   const onChange = (e: any) => {
     setValue(e.target.value);
   };
   // return the value with the onChange function instead of setValue function
-  return [ value, onChange ];
+  return [value, onChange];
 };
 
 export default function SignUp() {
@@ -43,7 +43,7 @@ export default function SignUp() {
 
     if (!firstName || !lastName || !email || !password) {
       setEmptyError(true);
-    };
+    }
 
     const body = {
       firstName,
@@ -52,20 +52,20 @@ export default function SignUp() {
       password,
     };
 
-    console.log("body", body);
+    console.log('body', body);
 
-    fetch('/', {
+    fetch('/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'Application/JSON',
       },
       body: JSON.stringify(body),
     })
-    .then(resp => resp.json())
-    .then((data) => {
-      console.log(data);
-    })
-    .catch(err => console.log('Signup fetch /: ERROR:', err));
+      .then((resp) => resp.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((err) => console.log('Signup fetch /: ERROR:', err));
   };
 
   return (
@@ -109,7 +109,9 @@ export default function SignUp() {
                   onChange={firstNameOnChange}
                   autoFocus
                 />
-                {!firstName && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
+                {!firstName && emptyError ? (
+                  <Typography color='darkRed'>Required</Typography>
+                ) : null}
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -121,7 +123,9 @@ export default function SignUp() {
                   name='lastName'
                   autoComplete='family-name'
                 />
-                {!lastName && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
+                {!lastName && emptyError ? (
+                  <Typography color='darkRed'>Required</Typography>
+                ) : null}
               </Grid>
               <Grid item xs={12}>
                 <TextField
@@ -133,7 +137,9 @@ export default function SignUp() {
                   name='email'
                   autoComplete='email'
                 />
-                {!email && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
+                {!email && emptyError ? (
+                  <Typography color='darkRed'>Required</Typography>
+                ) : null}
               </Grid>
               <Grid item xs={12}>
                 <TextField
@@ -146,7 +152,9 @@ export default function SignUp() {
                   id='password'
                   autoComplete='new-password'
                 />
-                {!password && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
+                {!password && emptyError ? (
+                  <Typography color='darkRed'>Required</Typography>
+                ) : null}
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
