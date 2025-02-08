@@ -2,7 +2,9 @@
 import userModel from '../models/db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import type { JwtPayload } from 'jsonwebtoken';
+// import crypto from 'crypto';
+// import nodemailer from 'nodemailer';
+// import type { JwtPayload } from 'jsonwebtoken';
 import type {
   Request,
   Response,
@@ -10,10 +12,10 @@ import type {
   // ErrorRequestHandler,
 } from 'express';
 
-interface DecodedToken extends JwtPayload {
-  userId: number;
-  email?: string;
-}
+// interface DecodedToken extends JwtPayload {
+//   userId: number;
+//   email?: string;
+// }
 
 interface FormBasedController {
   validateRegistration: (
@@ -53,6 +55,11 @@ interface FormBasedController {
     next: NextFunction
   ) => Promise<void>;
   verifyToken: (req: Request, res: Response, next: NextFunction) => void;
+  // sendEmailPassReset: (
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction
+  // ) => Promise<void>;
 }
 
 const formBasedController: FormBasedController = {
@@ -65,6 +72,7 @@ const formBasedController: FormBasedController = {
   validateLoginData: (req, res, next) => {},
   authenticateUser: async (req, res, next) => {},
   verifyToken: (req, res, next) => {},
+  // sendEmailPassReset: (req, res, next) => {},
 };
 
 // Here we have our collection of middleware functions, typically grouped around a specific topic
@@ -123,13 +131,14 @@ formBasedController.validateRegistration = (req, _res, next) => {
 };
 
 // Check if user already exists
-formBasedController.checkExistingUser = async (req, res, next) => {
+formBasedController.checkExistingUser = async (req, _res, next) => {
   const { email } = req.body;
 
   try {
     const existingUser = await userModel.getUserByEmail(email);
 
     if (existingUser) {
+      // need to check whether this is the appropriate response, currently this is sending the 409 message back to client, which may NOT be a best practice (bad actors thus could find out registered users)
       return next({
         log: 'User already exists',
         status: 409,
@@ -146,7 +155,7 @@ formBasedController.checkExistingUser = async (req, res, next) => {
   }
 };
 
-// hash password
+// hashing password
 formBasedController.hashPassword = async (req, res, next) => {
   try {
     const saltRounds = Number(process.env.SALT_ROUNDS) || 10;
@@ -170,7 +179,8 @@ formBasedController.createUser = async (req, res, next) => {
   try {
     const user = await userModel.createUser(email, hashedPassword, fname);
 
-    // Store user data (except password) in res.locals
+    // Store user data (except password) in res.locals (Is this really necessary?
+    // We probably don't want to send this info back to frontend, right? CHECK)
     res.locals.user = {
       id: user.id,
       email: user.email,
@@ -187,7 +197,7 @@ formBasedController.createUser = async (req, res, next) => {
 };
 
 // Validate login data
-formBasedController.validateLoginData = (req, res, next) => {
+formBasedController.validateLoginData = (req, _res, next) => {
   const { email, password } = req.body;
 
   if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
@@ -230,6 +240,7 @@ formBasedController.authenticateUser = async (req, res, next) => {
 
     if (!isValidPassword) {
       return next({
+        // is this valid response? CHECK!
         log: 'Invalid password',
         status: 401,
         message: { error: 'Invalid email or password' },
@@ -237,11 +248,15 @@ formBasedController.authenticateUser = async (req, res, next) => {
     }
 
     // Record the login
+    // To get the user's IP address, it seems like either req.socket.remoteAddress or req.ip works
+    // another option: req.headers['x-forwarded-for']
+    // might need to paste (app.set('trust proxy', true);) into server.ts to trust
     const ipAddress = req.ip || 'unknown';
     await userModel.recordLogin(user.id, ipAddress, true);
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET;
+    // const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = process.env.JWT_SECRET as jwt.Secret;
     if (!jwtSecret) {
       return next({
         log: 'JWT secret is not defined',
@@ -250,8 +265,35 @@ formBasedController.authenticateUser = async (req, res, next) => {
       });
     }
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, jwtSecret, {
-      expiresIn: '24h',
+    // This creates a token with a HEADER (algorithm & token type), PAYLOAD (user data), and SIGNATURE
+    // SIGNATURE is a one-way hash of the HEADER + PAYLOAD + JWT Secret stored on the server
+    const tokenExpiry = process.env.JWT_EXP || '24h';
+    const token = jwt.sign(
+      { userId: user.id, email: user.email }, // Payload
+      jwtSecret, // Secret key
+      { expiresIn: tokenExpiry } as jwt.SignOptions // Options
+    );
+
+    // The point of 'decoding' the jwt token here is just to extract
+    // its expiration to send it to the frontend
+    const decoded = jwt.decode(token) as jwt.JwtPayload;
+
+    // The 'exp' is in *seconds* since the Unix epoch (not ms)
+    // so to transform it into JS-friendly timestamp in ms: decoded.exp * 1000
+    // const expiresAt = (decoded?.exp ?? 0) * 1000;
+    const expiresAt = (decoded?.exp ?? 24 * 60 * 60) * 1000;
+
+    // Convert "24h" to milliseconds if we want to set cookie maxAge in Ms
+    // or simply do: 24 * 60 * 60 * 1000
+    const cookieMaxAgeMs = 24 * 60 * 60 * 1000; // 24 hours in ms
+
+    // set cookie on res object (place the token in it) to send it back to client
+    res.cookie('token', token, {
+      httpOnly: true, // JS in browser cannot access it
+      secure: process.env.NODE_ENV === 'production', // only over HTTPS in prod
+      sameSite: 'strict',
+      maxAge: cookieMaxAgeMs, // keep cookie for 24h
+      // path: '/',                                   // default is '/', can be set as needed
     });
 
     // Remove sensitive data before sending
@@ -262,7 +304,7 @@ formBasedController.authenticateUser = async (req, res, next) => {
     };
 
     res.locals.user = safeUser;
-    res.locals.token = token;
+    res.locals.expiresAt = expiresAt; // numeric seconds since epoch
 
     next();
   } catch (error) {
@@ -279,37 +321,86 @@ formBasedController.authenticateUser = async (req, res, next) => {
 };
 
 // Verify JWT token middleware
-formBasedController.verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Bearer TOKEN
+// formBasedController.verifyToken = (req, res, next) => {
+//   const token = req.headers.authorization?.split(' ')[1]; // Bearer TOKEN
 
-  if (!token) {
-    return next({
-      log: 'No token provided',
-      status: 401,
-      message: { error: 'Authentication required' },
-    });
-  }
+//   if (!token) {
+//     return next({
+//       log: 'No token provided',
+//       status: 401,
+//       message: { error: 'Authentication required' },
+//     });
+//   }
 
-  try {
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      return next({
-        log: 'JWT secret is not defined',
-        status: 500,
-        message: { error: 'Internal server error' },
-      });
-    }
-    const decoded = jwt.verify(token, jwtSecret) as DecodedToken;
-    // const decoded = jwt.verify(token, jwtSecret);
-    res.locals.userId = decoded.userId;
-    next();
-  } catch (error) {
-    return next({
-      log: 'Invalid token: ' + error,
-      status: 401,
-      message: { error: 'Invalid or expired token' },
-    });
-  }
-};
+//   try {
+//     const jwtSecret = process.env.JWT_SECRET;
+//     if (!jwtSecret) {
+//       return next({
+//         log: 'JWT secret is not defined',
+//         status: 500,
+//         message: { error: 'Internal server error' },
+//       });
+//     }
+//     const decoded = jwt.verify(token, jwtSecret) as DecodedToken;
+//     // const decoded = jwt.verify(token, jwtSecret);
+//     res.locals.userId = decoded.userId;
+//     next();
+//   } catch (error) {
+//     return next({
+//       log: 'Invalid token: ' + error,
+//       status: 401,
+//       message: { error: 'Invalid or expired token' },
+//     });
+//   }
+// };
+
+// formBasedController.sendEmailPassReset = async (req, res, next) => {
+//   const { email } = req.body;
+
+//   try {
+//     const user = await userModel.getUserByEmail(email);
+
+//     if (!user) {
+//       // Still return 200 for security
+//       return res.status(200).json({
+//         message: "If an account exists with this email, a password reset link will be sent."
+//       });
+//     }
+//     const resetToken = crypto.randomBytes(32).toString('hex');
+//     const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+
+//     await userModel.storeResetToken(user.id, resetToken, resetTokenExpiry);
+
+//     const transporter = nodemailer.createTransport({
+//       service: 'gmail',
+//       auth: {
+//         user: process.env.EMAIL_USER,
+//         pass: process.env.EMAIL_PASS
+//       }
+//     });
+
+//     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+//     await transporter.sendMail({
+//       to: email,
+//       subject: 'Password Reset Request',
+//       html: `
+//         <p>You requested a password reset.</p>
+//         <p>Click <a href="${resetUrl}">here</a> to reset your password.</p>
+//         <p>This link expires in 1 hour.</p>
+//       `
+//     });
+
+//     res.status(200).json({
+//       message: "If an account exists with this email, a password reset link will be sent."
+//     });
+//   } catch (error) {
+//     next({
+//       log: `Error in password reset: ${error}`,
+//       status: 500,
+//       message: { error: 'Failed to process password reset request' }
+//     });
+//   }
+// };
 
 export default formBasedController;
