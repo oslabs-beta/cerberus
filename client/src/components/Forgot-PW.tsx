@@ -1,10 +1,8 @@
-import * as React from 'react';
+import { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -15,18 +13,26 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const theme = createTheme();
 
+const useInput = (init: any) => {
+  const [ value, setValue ] = useState(init);
+  const onChange = (e: any) => {
+    setValue(e.target.value);
+  };
+  // return the value with the onChange function instead of setValue function
+  return [ value, onChange ];
+};
+
 export default function ForgotPW() {
+  const [email, emailOnChange] = useInput('');
+  const [emptyError, setEmptyError] = useState(false);
   //function that is called when form submitted, event param is the form submission event
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: any) => {
     //prevent page from reloading
     event.preventDefault();
-    //collect and store data using FormData object, event.currentTargetis the form elem that triggered submit event
-    const data = new FormData(event.currentTarget);
-    //logs extracted values
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    
+    if (!email) {
+      setEmptyError(true);
+    };
   };
 
   return (
@@ -64,9 +70,11 @@ export default function ForgotPW() {
                 fullWidth
                 id='email'
                 label='Email Address'
+                onChange={emailOnChange}
                 name='email'
                 autoComplete='email'
               />
+              {!email && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
             </Grid>
             <Button
               type='submit'
