@@ -3,7 +3,7 @@
 import { query } from '../config/database';
 import type { QueryResult } from 'pg';
 
-interface User {
+export interface User {
   id: number;
   email: string;
   password_hash: string;
@@ -146,6 +146,16 @@ export const userModel = {
       throw new Error('Error fetching login history');
     }
   },
+
+  // JUST ADDED
+  // storeResetToken: async (userId: number, token: string, expiry: Date) => {
+  //   const query = `
+  //     UPDATE users
+  //     SET reset_token = $1, reset_token_expiry = $2
+  //     WHERE id = $3
+  //   `;
+  //   await pool.query(query, [token, expiry, userId]);
+  // },
 };
 
 export default userModel;
