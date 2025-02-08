@@ -3,7 +3,7 @@ import {
   getAccessToken,
   getUserData,
   upsertUser,
-} from '../controllers/oauthController.ts';
+} from '../controllers/oauthController.js';
 
 const router = express.Router();
 
