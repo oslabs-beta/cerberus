@@ -1,19 +1,19 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
 
-@Entity()
+@Entity("oauth_users")
 export class OauthUser extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ unique: true })
+  @Column({ type: "varchar", unique: true })
   githubId!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: "varchar", nullable: true })
   email?: string;
 
-  @Column()
+  @Column({ type: "varchar" })
   name!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: "varchar", nullable: true })
   avatarUrl?: string;
 }

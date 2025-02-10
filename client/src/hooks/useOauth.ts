@@ -1,67 +1,34 @@
 import { useState, useEffect } from "react";
 
 export default function useOAuth() {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [githubToken, setGithubToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const codeParam = urlParams.get("code");
+    const handleAuth = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      const state = params.get("state");
 
-    if (codeParam) {
-      (async () => {
+      if (code && state) {
         try {
-         // Exchange code -> GitHub access_token
-          const response = await fetch(
-            `http://localhost:3000/api/oauth/github/access-token?code=${codeParam}`
-          );
-          const data = await response.json();
-          const githubAccessToken = data.access_token;
-
-          if (!githubAccessToken) {
-            throw new Error("No access_token returned from server");
-          }
-
-          // Use that token to get GitHub user data from /github/userdata
-          const userDataResponse = await fetch(
-            "http://localhost:3000/api/oauth/github/userdata",
-            {
-              method: "GET",
-              headers: { Authorization: `Bearer ${githubAccessToken}` },
-            }
-          );
-          const githubProfile = await userDataResponse.json();
-
-          // Upsert user in DB => server sets an http-only cookie
-          const upsertRes = await fetch("http://localhost:3000/api/oauth/github", {
+          const res = await fetch("/api/oauth/github", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include", // Important!
-            body: JSON.stringify({
-              githubId: githubProfile.id,
-              login: githubProfile.login,
-              name: githubProfile.name,
-              email: githubProfile.email,
-              avatarUrl: githubProfile.avatar_url,
-            }),
+            body: JSON.stringify({ code, state }),
           });
 
-          if (!upsertRes.ok) {
-            throw new Error("Error upserting user in the database");
-          }
-
-          // Cookie is now set. Navigating to /habits
-          setGithubToken(githubAccessToken);
-        } catch (error) {
-          console.error("OAuth error:", error);
-        } finally {
-          setIsLoading(false);
+          if (!res.ok) throw new Error("Authentication failed");
+          window.history.replaceState({}, "", window.location.pathname);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Unknown error");
         }
-      })();
-    } else {
+      }
       setIsLoading(false);
-    }
+    };
+
+    handleAuth();
   }, []);
 
-  return { isLoading, githubToken };
+  return { isLoading, error };
 }
