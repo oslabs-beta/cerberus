@@ -1,22 +1,19 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
 
-interface OauthUser extends Document {
-  githubId: string;
+@Entity()
+export class OauthUser extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
+
+  @Column({ unique: true })
+  githubId!: string;
+
+  @Column({ nullable: true })
   email?: string;
-  name: string;
+
+  @Column()
+  name!: string;
+
+  @Column({ nullable: true })
   avatarUrl?: string;
 }
-
-const oauthUserSchema: Schema<OauthUser> = new Schema(
-  {
-    githubId: { type: String, required: true, unique: true },
-    email: { type: String },
-    name: { type: String, required: true },
-    avatarUrl: { type: String },
-  },
-  { timestamps: true }
-);
-
-const OauthUser = mongoose.model<OauthUser>('OauthUser', oauthUserSchema);
-
-export default OauthUser;
