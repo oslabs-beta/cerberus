@@ -8,14 +8,13 @@ import ForgotPW from './components/Forgot-PW';
 const App = () => {
   return (
     <Router>
-      <Container>
-        <Routes>
-          {/* give the route a react component instance */}
-          <Route path='/Login' element={<Login />} />
-          <Route path='/sign-up' element={<SignUp />} />
-          <Route path='/Forgot-PW' element={<ForgotPW />} />
-        </Routes>
-      </Container>
+      <Routes>
+        {/* give the route a react component instance */}
+        <Route path='/' element={<Container />} />
+        <Route path='/Login' element={<Login />} />
+        <Route path='/sign-up' element={<SignUp />} />
+        <Route path='/Forgot-PW' element={<ForgotPW />} />
+      </Routes>
     </Router>
   );
 };
