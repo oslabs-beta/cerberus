@@ -22,8 +22,11 @@ export const handleRegisterStart = async (
   }
 
   try {
-    let user = await userService.getUserByUsername(email);
+    let user = await userService.getUserByEmail(email);
     if (user) {
+      // frontend needs to notify user that a passkey already exists and
+      // adding from the same device is not possible
+      // OR ELSE, we must allow user to create a new passkey as well!
       return next(new CustomError('Email already exists', 400));
     } else {
       user = await userService.createUser(email);
@@ -43,9 +46,14 @@ export const handleRegisterStart = async (
       // Support for the two most common algorithms: ES256, and RS256
       supportedAlgorithmIDs: [-7, -257],
     });
+    // storing user id and current challenge into this session
     req.session.loggedInUserId = user.id;
     req.session.currentChallenge = options.challenge;
-    res.send(options);
+    // remove this later
+    console.log(options);
+    res.locals.options = options;
+    next();
+    // res.send(options);
   } catch (error) {
     next(
       error instanceof CustomError
@@ -81,16 +89,22 @@ export const handleRegisterFinish = async (
     });
 
     if (verification.verified && verification.registrationInfo) {
-      const { credentialPublicKey, credentialID, counter } =
-        verification.registrationInfo;
+      const { credential } = verification.registrationInfo;
+      const credentialID = new Uint8Array(Buffer.from(credential.id, 'base64'));
+      const credentialPublicKey =
+        verification.registrationInfo.credential.publicKey;
+      const counter = credential.counter;
+
       await credentialService.saveNewCredential(
-        loggedInUserId,
+        parseInt(loggedInUserId),
         uint8ArrayToBase64(credentialID),
         uint8ArrayToBase64(credentialPublicKey),
         counter,
         body.response.transports
       );
-      res.send({ verified: true });
+      res.locals.verified = true;
+      next();
+      // res.send({ verified: true });
     } else {
       next(new CustomError('Verification failed', 400));
     }

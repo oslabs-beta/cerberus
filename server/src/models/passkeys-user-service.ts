@@ -38,7 +38,12 @@ export const userService = {
   async createUser(email: string) {
     // const id = uuidv4();
     // await query('INSERT INTO users (id, email) VALUES (?, ?)', [id, email]);
-    await query('INSERT INTO users (email) VALUES ($1)', [email]);
-    return { email };
+    const result: QueryResult = await query(
+      'INSERT INTO users (email) VALUES ($1) RETURNING *',
+      [email]
+    );
+    const rows = result.rows;
+    return rows[0];
+    // return { email };
   },
 };
