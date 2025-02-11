@@ -59,18 +59,3 @@ const Container = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default Container;
-
-// import { useNavigate } from "react-router-dom";
-// {open && (
-//   <ul className="menu">
-//     <li className="menu-item">
-//       <button onClick={() => navigate("/signup")}>Form-based</button>
-//     </li>
-//     <li className="menu-item">
-//       <button onClick={() => navigate("/login")}>OAuth</button>
-//     </li>
-//     <li className="menu-item">
-//       <button onClick={() => navigate("/forgot-password")}>Passkey</button>
-//     </li>
-//   </ul>
-// )}

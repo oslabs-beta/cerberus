@@ -10,46 +10,59 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { useNavigate } from 'react-router-dom';
+import {
+  CenterFocusStrong,
+  NavigateBefore,
+} from '../../../node_modules/@mui/icons-material/index';
+import '../App.css';
 
 const theme = createTheme();
 
 const useInput = (init: any) => {
-  const [ value, setValue ] = useState(init);
+  const [value, setValue] = useState(init);
   const onChange = (e: any) => {
     setValue(e.target.value);
   };
   // return the value with the onChange function instead of setValue function
-  return [ value, onChange ];
+  return [value, onChange];
 };
 
 export default function ForgotPW() {
   const [email, emailOnChange] = useInput('');
   const [emptyError, setEmptyError] = useState(false);
+  //ability to navigate to other endpoint
+  const navigate = useNavigate();
+  const backToSignUpClick = () => {
+    navigate('/Sign-up');
+  };
   //function that is called when form submitted, event param is the form submission event
   const handleSubmit = (event: any) => {
     //prevent page from reloading
     event.preventDefault();
-    
+
     if (!email) {
       setEmptyError(true);
-    };
+    }
   };
 
   return (
     <ThemeProvider theme={theme}>
-      <Container component='main' maxWidth='xs' disableGutters>
+      <Container component='main' maxWidth='xs' sx={{ bgcolor: 'transparent' }}>
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 15,
+            width: '100%',
+            marginTop: 35,
             marginBottom: 10,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            bgcolor: 'white', // Set background color to white
-            padding: 3, // Add some padding
-            borderRadius: 2, // Optional: Rounded corners
-            boxShadow: 3, // Optional: Adds a slight shadow for contrast
+            justifyContent: 'center',
+            bgcolor: 'white',
+            padding: 3,
+            borderRadius: 2,
+            boxShadow: 3,
           }}
         >
           <Avatar sx={{ m: 1, bgcolor: '#535bf2' }}>
@@ -74,7 +87,9 @@ export default function ForgotPW() {
                 name='email'
                 autoComplete='email'
               />
-              {!email && emptyError ? (<Typography color='darkRed'>Required</Typography>) : null}
+              {!email && emptyError ? (
+                <Typography color='darkRed'>Required</Typography>
+              ) : null}
             </Grid>
             <Button
               type='submit'
@@ -86,7 +101,7 @@ export default function ForgotPW() {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link href='#' variant='body2'>
+                <Link onClick={backToSignUpClick} href='#' variant='body2'>
                   Need an account? Sign-up here
                 </Link>
               </Grid>

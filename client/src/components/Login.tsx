@@ -10,6 +10,8 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { useNavigate } from 'react-router-dom';
+import '../App.css';
 
 const theme = createTheme();
 
@@ -26,6 +28,12 @@ export default function Login() {
   const [email, emailOnChange] = useInput('');
   const [password, passwordOnChange] = useInput('');
   const [emptyError, setEmptyError] = useState(false);
+  //ability to navigate to other endpoint
+  const navigate = useNavigate();
+
+  const toForgotPWClick = () => {
+    navigate('/Forgot-PW');
+  };
 
   const body = {
     email,
@@ -61,8 +69,8 @@ export default function Login() {
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 8,
-            marginBottom: 10,
+            marginTop: 30,
+            marginBottom: 30,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -123,8 +131,8 @@ export default function Login() {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link href='#' variant='body2'>
-                  Need an account? Login here
+                <Link onClick={toForgotPWClick} href='#' variant='body2'>
+                  Forgot password? Click here
                 </Link>
               </Grid>
             </Grid>

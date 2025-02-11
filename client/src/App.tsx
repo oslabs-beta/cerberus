@@ -20,20 +20,3 @@ const App = () => {
 };
 
 export default App;
-
-// const App = () => {
-//   return (
-//     <Router>
-//       <DropdownMenu />
-// {
-/* <Container>
-//       <Routes>
-//         <Route path="/Login" element={<Login />} />
-//         <Route path="/Sign-up" element={<Sign-up/>} />
-//         <Route path="/Forgot-PW" element={<Forgot-PW />} />
-//       </Routes>
-</Container> */
-// }
-//     </Router>
-//   );
-// };

@@ -13,7 +13,8 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { on } from 'events';
-//import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import '../App.css';
 
 const theme = createTheme();
 
@@ -34,6 +35,12 @@ export default function SignUp({ onSignUpSuccess }) {
   const [emptyError, setEmptyError] = useState(false);
   // const [isSignedUp, setIsSignedUp] = useState(false);
 
+  //ability to navigate to other endpoint
+  const navigate = useNavigate();
+
+  const goToLoginClick = () => {
+    navigate('/login');
+  };
   //function that is called when form submitted, event param is the form submission event
   const handleSubmit = (event: any) => {
     //prevent page from reloading
@@ -83,8 +90,8 @@ export default function SignUp({ onSignUpSuccess }) {
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 8,
-            marginBottom: 10,
+            marginTop: 30,
+            marginBottom: 30,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -180,6 +187,7 @@ export default function SignUp({ onSignUpSuccess }) {
               </Grid>
             </Grid>
             <Button
+              onClick={goToLoginClick}
               type='submit'
               fullWidth
               variant='contained'
