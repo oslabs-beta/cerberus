@@ -13,6 +13,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { on } from 'events';
+//import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
@@ -71,6 +72,9 @@ export default function SignUp({ onSignUpSuccess }) {
         onSignUpSuccess();
       })
       .catch((err) => console.log('Signup fetch /: ERROR:', err));
+
+    //// After successful sign-up, redirect to Login page
+    // navigate("/login");
   };
 
   return (
