@@ -1,17 +1,26 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Container from './components/Container';
+import SignUp from './components/Sign-up';
+import Login from './components/Login';
+import ForgotPW from './components/Forgot-PW';
 
 const App = () => {
-  return <Container></Container>;
+  return (
+    <Router>
+      <Container>
+        <Routes>
+          {/* give the route a react component instance */}
+          <Route path='/Login' element={<Login />} />
+          <Route path='/sign-up' element={<SignUp />} />
+          <Route path='/Forgot-PW' element={<ForgotPW />} />
+        </Routes>
+      </Container>
+    </Router>
+  );
 };
 
 export default App;
-
-// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// import Container from "./components/Container";
-// import SignUp from "./components/Sign-up";
-// import Login from "./components/Login";
-// import ForgotPW from "./components/Forgot-PW";
 
 // const App = () => {
 //   return (
