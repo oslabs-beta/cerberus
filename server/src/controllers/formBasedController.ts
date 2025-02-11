@@ -284,8 +284,8 @@ formBasedController.authenticateUser = async (req, res, next) => {
     const expiresAt = (decoded?.exp ?? 24 * 60 * 60) * 1000;
 
     // Convert "24h" to milliseconds if we want to set cookie maxAge in Ms
-    // or simply do: 24 * 60 * 60 * 1000
-    const cookieMaxAgeMs = 24 * 60 * 60 * 1000; // 24 hours in ms
+    const cookieMaxAgeMs =
+      Number(process.env.COOKIE_AGE) || 24 * 60 * 60 * 1000; // 24 hours in ms
 
     // set cookie on res object (place the token in it) to send it back to client
     res.cookie('token', token, {
