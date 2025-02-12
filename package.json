@@ -22,6 +22,7 @@
     "@mui/material": "^6.4.2",
     "@simplewebauthn/server": "^13.1.1",
     "@simplewebauthn/types": "^12.0.0",
+    "@simplewebauthn/typescript-types": "^8.3.4",
     "@types/pg": "^8.11.11",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",

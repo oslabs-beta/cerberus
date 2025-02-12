@@ -50,7 +50,7 @@ export const handleRegisterStart = async (
     req.session.loggedInUserId = user.id;
     req.session.currentChallenge = options.challenge;
     // remove this later
-    console.log(options);
+    // console.log(options);
     res.locals.options = options;
     next();
     // res.send(options);
