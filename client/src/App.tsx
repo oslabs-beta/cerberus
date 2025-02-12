@@ -11,6 +11,7 @@ const App = () => {
       <Routes>
         {/* give the route a react component instance */}
         <Route path='/' element={<Container />} />
+        {/* <Route path='/Dashboard' element={<Dashboard />} /> */}
         <Route path='/Login' element={<Login />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/Forgot-PW' element={<ForgotPW />} />
