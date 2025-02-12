@@ -12,6 +12,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
+//some kind of logic that receives something from backend possibly that verifies that the email and password from front end match the back end and then user can successfully be routed to the dashboard only if login is "successful"
 
 const theme = createTheme();
 
@@ -35,6 +36,11 @@ export default function Login() {
     navigate('/Forgot-PW');
   };
 
+  //navigate back to dashboard
+
+  const goToDashboard = () => {
+    navigate('/Dashboard');
+  };
   const body = {
     email,
     password,
@@ -122,6 +128,7 @@ export default function Login() {
               ) : null}
             </Grid>
             <Button
+              onClick={goToDashboard}
               type='submit'
               fullWidth
               variant='contained'

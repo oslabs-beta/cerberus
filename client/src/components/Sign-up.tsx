@@ -41,6 +41,7 @@ export default function SignUp({ onSignUpSuccess }) {
   const goToLoginClick = () => {
     navigate('/login');
   };
+
   //function that is called when form submitted, event param is the form submission event
   const handleSubmit = (event: any) => {
     //prevent page from reloading
@@ -197,8 +198,8 @@ export default function SignUp({ onSignUpSuccess }) {
             </Button>
             <Grid container justifyContent='flex-end'>
               <Grid item>
-                <Link href='#' variant='body2'>
-                  Already have an account? Sign in
+                <Link onClick={goToLoginClick} href='#' variant='body2'>
+                  Already have an account? Login
                 </Link>
               </Grid>
             </Grid>

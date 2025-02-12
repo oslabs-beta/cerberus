@@ -6,6 +6,7 @@ import Login from './Login';
 import ForgotPW from './Forgot-PW';
 import Passkey from './Passkey';
 import { useNavigate } from 'react-router-dom';
+import Dashboard from './Dashboard';
 
 //container should accept and render the children from the app.tsx file
 const Container = ({ children }: { children: React.ReactNode }) => {
@@ -55,6 +56,7 @@ const Container = ({ children }: { children: React.ReactNode }) => {
         {/* <Login></Login> */}
         {/* <ForgotPW></ForgotPW> */}
         {/* <Passkey></Passkey> */}
+        {/* <Dashboard></Dashboard> */}
       </div>
     </div>
   );
