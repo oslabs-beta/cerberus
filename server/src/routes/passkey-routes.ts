@@ -12,7 +12,7 @@ import {
 import {
   handleLoginStart,
   handleLoginFinish,
-} from '@/controllers/passkey-authentication';
+} from '../controllers/passkey-authentication';
 
 const router: Router = express.Router();
 
