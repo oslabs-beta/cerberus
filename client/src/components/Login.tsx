@@ -12,60 +12,90 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
+import { response } from 'express';
 //some kind of logic that receives something from backend possibly that verifies that the email and password from front end match the back end and then user can successfully be routed to the dashboard only if login is "successful"
 
 const theme = createTheme();
 
+//custom react hook to manage state of an input field
 const useInput = (init: any) => {
   const [value, setValue] = useState(init);
   const onChange = (e: any) => {
     setValue(e.target.value);
   };
-  // return the value with the onChange function instead of setValue function
+  // return the value with the onChange event handler instead of setValue function
   return [value, onChange];
 };
 
 export default function Login() {
-  const [email, emailOnChange] = useInput('');
-  const [password, passwordOnChange] = useInput('');
   const [emptyError, setEmptyError] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [error, setError] = useState('');
+  const [loginAttempted, setLoginAttempted] = useState(false);
+
   //ability to navigate to other endpoint
   const navigate = useNavigate();
 
+  //navigate to forgot password
   const toForgotPWClick = () => {
     navigate('/Forgot-PW');
   };
 
   //navigate back to dashboard
-
   const goToDashboard = () => {
     navigate('/Dashboard');
   };
-  const body = {
-    email,
-    password,
-  };
-  //login fetch request
-  fetch('/api/auth/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'Application/JSON',
-    },
-    body: JSON.stringify(body),
-  })
-    .then((resp) => resp.json())
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((err) => console.log('Login fetch /: ERROR:', err));
 
-  //function that is called when form submitted, event param is the form submission event
-  const handleSubmit = (event: any) => {
+  //function that is called when input is submitted, event param is the submission event
+  const handleSubmit = async (event: any) => {
     //prevent page from reloading
     event.preventDefault();
 
+    // console.log(event.target.elements.email.value);
+    // console.log(event.target.elements.password.value);
+
+    //hold onto email and password values
+    const email = event.target.elements.email.value;
+    const password = event.target.elements.password.value;
+
+    //if email or password dont exist setEmptyError to true
     if (!email || !password) {
       setEmptyError(true);
+    }
+
+    const body = {
+      email,
+      password,
+    };
+
+    //login fetch request
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'Application/JSON',
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await response.json();
+      console.log(data);
+      //check if status on the body of the response we receive from the backend is "Login successful"
+      if (response.ok) {
+        console.log('Login successful', data.message);
+        //change state to setIsAuthenticated to true?
+        setIsAuthenticated(true);
+        //if it is successful then login button goes to dashboard
+        navigate('/Dashboard');
+      } else {
+        console.log('Login failed', data.message);
+        setIsAuthenticated(false);
+        setLoginAttempted(true);
+        setError(data.message || 'Invalid credentials');
+        //where should it navigate to if credentials invalid?
+      }
+    } catch (err) {
+      console.error('Login fetch /: ERROR:', err);
+      setError('Something went wrong, please try again');
     }
   };
 
@@ -104,7 +134,6 @@ export default function Login() {
                 fullWidth
                 id='email'
                 label='Email Address'
-                onChange={emailOnChange}
                 name='email'
                 autoComplete='email'
               />
@@ -118,7 +147,6 @@ export default function Login() {
                 fullWidth
                 name='password'
                 label='Password'
-                onChange={passwordOnChange}
                 type='password'
                 id='password'
                 autoComplete='new-password'
@@ -126,9 +154,11 @@ export default function Login() {
               {!password && emptyError ? (
                 <Typography color='darkRed'>Required</Typography>
               ) : null}
+              {loginAttempted && !isAuthenticated ? (
+                <Typography color='darkRed'>Invalid credentials</Typography>
+              ) : null}
             </Grid>
             <Button
-              onClick={goToDashboard}
               type='submit'
               fullWidth
               variant='contained'
