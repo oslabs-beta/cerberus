@@ -4,9 +4,15 @@ import { useState } from 'react';
 import SignUp from './Sign-up';
 import Login from './Login';
 import ForgotPW from './Forgot-PW';
+import Passkey from './Passkey';
+import { useNavigate } from 'react-router-dom';
+import Dashboard from './Dashboard';
 
-const Container = () => {
+//container should accept and render the children from the app.tsx file
+const Container = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false);
+  const [isSignedUp, setIsSignedUp] = React.useState(false);
+  const navigate = useNavigate();
 
   const handleOpen = () => {
     setOpen(!open);
@@ -30,7 +36,7 @@ const Container = () => {
       {open ? (
         <ul className='menu'>
           <li className='menu-item'>
-            <button>Form-based</button>
+            <button onClick={() => navigate('/Sign-up')}>Form-based</button>
           </li>
           <li className='menu-item'>
             <button>OAuth</button>
@@ -41,9 +47,16 @@ const Container = () => {
         </ul>
       ) : null}
       <div className='bottom-container'>
-        <SignUp></SignUp>
+        {/* <SignUp></SignUp> */}
+        {/* {isSignedUp ? (
+          <Login />
+        ) : (
+          <SignUp onSignUpSuccess={() => setIsSignedUp(true)} />
+        )} */}
         {/* <Login></Login> */}
         {/* <ForgotPW></ForgotPW> */}
+        {/* <Passkey></Passkey> */}
+        {/* <Dashboard></Dashboard> */}
       </div>
     </div>
   );
