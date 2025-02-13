@@ -21,11 +21,7 @@ router.post(
   '/register-start',
   handleRegisterStart,
   (_req: Request, res: Response) => {
-    res.status(201).json({
-      success: true,
-      message: 'Challenge successfully created',
-      user: res.locals.options,
-    });
+    res.status(201).json(res.locals.options);
   }
 );
 
@@ -46,11 +42,7 @@ router.post(
   '/login-start',
   handleLoginStart,
   (_req: Request, res: Response) => {
-    res.status(201).json({
-      success: true,
-      message: 'Challenge successfully created',
-      user: res.locals.options,
-    });
+    res.status(201).json(res.locals.options);
   }
 );
 

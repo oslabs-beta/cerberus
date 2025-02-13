@@ -71,6 +71,9 @@ export const handleRegisterFinish = async (
   const { body } = req;
   const { currentChallenge, loggedInUserId } = req.session;
 
+  console.log('Session data:', { currentChallenge, loggedInUserId });
+  console.log('Request body:', body);
+
   if (!loggedInUserId) {
     return next(new CustomError('User ID is missing', 400));
   }
@@ -88,6 +91,8 @@ export const handleRegisterFinish = async (
       requireUserVerification: true,
     });
 
+    console.log('Verification result:', verification);
+
     if (verification.verified && verification.registrationInfo) {
       const { credential } = verification.registrationInfo;
       const credentialID = new Uint8Array(Buffer.from(credential.id, 'base64'));
@@ -95,12 +100,15 @@ export const handleRegisterFinish = async (
         verification.registrationInfo.credential.publicKey;
       const counter = credential.counter;
 
+      const attestationType = verification.registrationInfo.fmt || 'none';
+
       await credentialService.saveNewCredential(
         parseInt(loggedInUserId),
         uint8ArrayToBase64(credentialID),
         uint8ArrayToBase64(credentialPublicKey),
         counter,
-        body.response.transports
+        body.response.transports,
+        attestationType
       );
       res.locals.verified = true;
       next();

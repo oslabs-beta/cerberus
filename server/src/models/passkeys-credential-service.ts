@@ -9,7 +9,8 @@ export interface DBAuthenticatorDevice {
   credentialID: string;
   credentialPublicKey: string;
   counter: number;
-  transports: string[]; // or AuthenticatorTransport[] if you want stricter typing
+  transports: string[];
+  attestationType: string;
 }
 
 export const credentialService = {
@@ -21,14 +22,15 @@ export const credentialService = {
     credentialId: string,
     publicKey: string,
     counter: number,
-    transports: string[] // store as an actual array if using a TEXT[] column
+    transports: string[], // store as an actual array if using a TEXT[] column
+    attestationType: string = 'none'
   ): Promise<void> {
     try {
       await query(
         `INSERT INTO credentials 
-         (user_id, credential_id, public_key, signature_count, transports) 
-         VALUES ($1, $2, $3, $4, $5)`,
-        [userId, credentialId, publicKey, counter, transports]
+         (user_id, credential_id, public_key, signature_count, transports, attestation_type) 
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [userId, credentialId, publicKey, counter, transports, attestationType]
       );
     } catch (error) {
       console.error('Error saving new credential:', error);

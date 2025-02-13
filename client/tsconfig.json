@@ -24,7 +24,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@components/*": ["./components/*"]
+      "@components/*": ["./src/components/*"] // changed this from "./components/*"
     }
   },
   "include": ["src", "components", "*.ts", "*.tsx", "vite.config.ts"],

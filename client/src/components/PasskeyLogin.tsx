@@ -1,11 +1,11 @@
 import React from 'react';
-import { usePasskeyForm } from '../hooks/useCreatePasskey'; // custom hook
+import { usePasskeyLogin } from '../hooks/useLoginWithPasskey.ts';
 // import createPasskey from '../services/passkeyService.ts';  // API request
 // import { validateEmail } from '../utils/validation.ts'; // email validation
 
-const CreatePasskeyForm = () => {
+const PasskeyLogin = () => {
   const { email, error, isLoading, handleSubmit, handleEmailChange } =
-    usePasskeyForm();
+    usePasskeyLogin();
 
   return (
     <form onSubmit={handleSubmit}>
@@ -28,7 +28,7 @@ const CreatePasskeyForm = () => {
   );
 };
 
-export default CreatePasskeyForm;
+export default PasskeyLogin;
 
 // import { useState } from 'react';
 // import Avatar from '@mui/material/Avatar';

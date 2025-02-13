@@ -19,8 +19,10 @@ const createPasskey = async (email: string) => {
     }
     // convert registration options to JSON
     const options = await response.json();
+    console.log('Registration options returned by server:', options);
 
     const attestationResponse = await startRegistration(options);
+    console.log('Attestation response:', attestationResponse);
 
     // Send attestationResponse back to server for verification and storage.
     const verificationResponse = await fetch('/api/passkey/register-finish', {
@@ -76,7 +78,11 @@ const login = async (email: string) => {
       alert('Login failed');
     }
   } catch (error) {
-    alert('Error: ' + error.message);
+    if (error instanceof Error) {
+      alert('Error: ' + error.message);
+    } else {
+      alert('Error: ' + error);
+    }
   }
 };
 

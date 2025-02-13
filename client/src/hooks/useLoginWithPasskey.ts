@@ -10,7 +10,9 @@ interface UsePasskeyFormReturn {
   handleSubmit: (e: React.FormEvent) => Promise<void>;
 }
 
-export const usePasskeyForm = (): UsePasskeyFormReturn => {
+// console.log('Loading useLoginWithPasskey.ts');
+
+export const usePasskeyLogin = (): UsePasskeyFormReturn => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
