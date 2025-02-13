@@ -50,7 +50,7 @@ pool.on('error', (err) => {
 // Export query helper function
 export const query = async (
   text: string,
-  params?: (string | number | boolean)[]
+  params?: (string | number | boolean | string[] | unknown)[]
 ) => {
   const start = Date.now();
   try {

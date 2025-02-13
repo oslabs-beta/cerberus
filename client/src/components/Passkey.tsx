@@ -41,7 +41,6 @@ export default function SignUp({ onSignUpSuccess }) {
   const goToLoginClick = () => {
     navigate('/login');
   };
-
   //function that is called when form submitted, event param is the form submission event
   const handleSubmit = (event: any) => {
     //prevent page from reloading
@@ -106,7 +105,7 @@ export default function SignUp({ onSignUpSuccess }) {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component='h1' variant='h5' color='black'>
-            Sign up
+            Sign in
           </Typography>
           <Box
             component='form'
@@ -115,35 +114,6 @@ export default function SignUp({ onSignUpSuccess }) {
             sx={{ mt: 3 }}
           >
             <Grid container spacing={2}>
-              {/* <Grid item xs={12} sm={6}>
-                <TextField
-                  autoComplete='given-name'
-                  name='firstName'
-                  required
-                  fullWidth
-                  id='firstName'
-                  label='First Name'
-                  onChange={firstNameOnChange}
-                  autoFocus
-                />
-                {!firstName && emptyError ? (
-                  <Typography color='darkRed'>Required</Typography>
-                ) : null}
-              </Grid> */}
-              {/* <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id='lastName'
-                  label='Last Name'
-                  onChange={lastNameOnChange}
-                  name='lastName'
-                  autoComplete='family-name'
-                />
-                {!lastName && emptyError ? (
-                  <Typography color='darkRed'>Required</Typography>
-                ) : null}
-              </Grid> */}
               <Grid item xs={12}>
                 <TextField
                   required
@@ -158,34 +128,6 @@ export default function SignUp({ onSignUpSuccess }) {
                   <Typography color='darkRed'>Required</Typography>
                 ) : null}
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name='password'
-                  label='Password'
-                  onChange={passwordOnChange}
-                  type='password'
-                  id='password'
-                  autoComplete='new-password'
-                />
-                {!password && emptyError ? (
-                  <Typography color='darkRed'>Required</Typography>
-                ) : null}
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox value='allowExtraEmails' color='primary' />
-                  }
-                  label={
-                    <Typography sx={{ color: 'black' }}>
-                      I want to receive marketing promotions and updates via
-                      email.
-                    </Typography>
-                  }
-                />
-              </Grid>
             </Grid>
             <Button
               onClick={goToLoginClick}
@@ -194,15 +136,34 @@ export default function SignUp({ onSignUpSuccess }) {
               variant='contained'
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign Up
+              Continue
             </Button>
-            <Grid container justifyContent='flex-end'>
-              <Grid item>
-                <Link onClick={goToLoginClick} href='#' variant='body2'>
-                  Already have an account? Login
-                </Link>
+            <Grid container alignItems='center' justifyContent='center'>
+              <Grid item xs={5}>
+                <hr style={{ borderTop: '2px solid gray' }} />
+              </Grid>
+              <Grid item xs={2} style={{ textAlign: 'center', color: 'gray' }}>
+                <Typography>or</Typography>
+              </Grid>
+              <Grid item xs={5}>
+                <hr style={{ borderTop: '2px solid gray' }} />
               </Grid>
             </Grid>
+            <Button
+              onClick={goToLoginClick}
+              type='submit'
+              fullWidth
+              variant='contained'
+              sx={{
+                mt: 3,
+                mb: 2,
+                bgcolor: 'white',
+                color: 'black',
+                border: '1px solid gray',
+              }}
+            >
+              Sign in with a Passkey
+            </Button>
           </Box>
         </Box>
       </Container>
