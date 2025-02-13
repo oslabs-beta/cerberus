@@ -1,19 +1,30 @@
 import express from 'express';
-import {
-  getAccessToken,
-  getUserData,
-  upsertUser,
-} from '../controllers/oauthController.js';
+import { githubCallback, googleCallback } from '../controllers/oauthController';
 
 const router = express.Router();
 
-// 1) Exchange code for an access token
-router.get('/github/access-token', getAccessToken);
+// GitHub OAuth
+router.get('/github', (req, res) => {
+  const state = crypto.randomUUID();
+  req.session.oauthState = state;
+  res.redirect(`https://github.com/login/oauth/authorize?
+    client_id=${process.env.GITHUB_CLIENT_ID}&
+    state=${state}`);
+});
 
-// 2) Get user data from GitHub using the token
-router.get('/github/userdata', getUserData);
+router.get('/github/callback', githubCallback);
 
-// 3) Upsert user in local DB
-router.post('/github', upsertUser);
+// Google OAuth
+router.get('/google', (req, res) => {
+  const state = crypto.randomUUID();
+  req.session.oauthState = state;
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?
+    client_id=${process.env.GOOGLE_CLIENT_ID}&
+    redirect_uri=${process.env.GOOGLE_CALLBACK_URL}&
+    state=${state}&
+    scope=email profile`);
+});
+
+router.get('/google/callback', googleCallback);
 
 export default router;

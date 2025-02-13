@@ -4,12 +4,20 @@ import { useState } from 'react';
 import SignUp from './Sign-up';
 import Login from './Login';
 import ForgotPW from './Forgot-PW';
+import OAuthButtons from './Oauth'; 
+// import Passkey from './Passkey';
 
 const Container = () => {
   const [open, setOpen] = React.useState(false);
-
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  
   const handleOpen = () => {
     setOpen(!open);
+  };
+
+  const handleMethodSelect = (method: string) => {
+    setSelectedMethod(method);
+    setOpen(false);
   };
 
   return (
@@ -30,20 +38,20 @@ const Container = () => {
       {open ? (
         <ul className='menu'>
           <li className='menu-item'>
-            <button>Form-based</button>
+            <button onClick={() => handleMethodSelect('form')}>Form-based</button>
           </li>
           <li className='menu-item'>
-            <button>OAuth</button>
+            <button onClick={() => handleMethodSelect('oauth')}>OAuth</button>
           </li>
           <li className='menu-item'>
-            <button>Passkey</button>
+            <button onClick={() => handleMethodSelect('passkey')}>Passkey</button>
           </li>
         </ul>
       ) : null}
       <div className='bottom-container'>
-        <SignUp></SignUp>
-        {/* <Login></Login> */}
-        {/* <ForgotPW></ForgotPW> */}
+        {selectedMethod === 'form' && <SignUp />}
+        {selectedMethod === 'oauth' && <OAuthButtons />} 
+        {selectedMethod === 'passkey' && <div>Passkey Component</div>}
       </div>
     </div>
   );

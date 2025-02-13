@@ -1,19 +1,25 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity("oauth_users")
-export class OauthUser extends BaseEntity {
-  @PrimaryGeneratedColumn("uuid")
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: "varchar", unique: true })
-  githubId!: string;
+  @Column({ nullable: true, unique: true })
+  githubId?: string;
 
-  @Column({ type: "varchar", nullable: true })
-  email?: string;
+  @Column({ nullable: true, unique: true })
+  googleId?: string;
 
-  @Column({ type: "varchar" })
+  @Column()
+  email!: string;
+
+  @Column()
   name!: string;
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ nullable: true })
   avatarUrl?: string;
+
+  @Column()
+  provider!: 'github' | 'google';
 }

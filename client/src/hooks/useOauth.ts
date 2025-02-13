@@ -1,34 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export default function useOAuth() {
-  const [isLoading, setIsLoading] = useState(true);
+const useOAuth = () => {
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleAuth = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      const state = params.get("state");
+  const startOAuth = (provider: 'github' | 'google') => {
+    setIsLoading(true);
+    const state = crypto.randomUUID();
+    sessionStorage.setItem('oauth_state', state);
 
-      if (code && state) {
-        try {
-          const res = await fetch("/api/oauth/github", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code, state }),
-          });
+    let authUrl = '';
+    if (provider === 'github') {
+      authUrl = `https://github.com/login/oauth/authorize?
+        client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&
+        state=${state}`;
+    } else {
+      authUrl = `https://accounts.google.com/o/oauth2/v2/auth?
+        client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&
+        redirect_uri=${encodeURIComponent(window.location.origin + '/callback')}&
+        response_type=code&
+        scope=email profile&
+        state=${state}`;
+    }
 
-          if (!res.ok) throw new Error("Authentication failed");
-          window.history.replaceState({}, "", window.location.pathname);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : "Unknown error");
-        }
-      }
-      setIsLoading(false);
-    };
+    window.location.href = authUrl;
+  };
 
-    handleAuth();
-  }, []);
+  return { startOAuth, isLoading, error };
+};
 
-  return { isLoading, error };
-}
+export default useOAuth;
