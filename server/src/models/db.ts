@@ -1,5 +1,4 @@
 // db.ts - This is your model layer
-// import { query } from '@/config/database';
 import { query } from '../config/database';
 import type { QueryResult } from 'pg';
 
