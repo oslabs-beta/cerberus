@@ -7,15 +7,23 @@ import ForgotPW from './Forgot-PW';
 import Passkey from './Passkey';
 import { useNavigate } from 'react-router-dom';
 import Dashboard from './Dashboard';
+import OAuthButtons from './Oauth'; 
+// import Passkey from './Passkey';
 
 //container should accept and render the children from the app.tsx file
 const Container = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false);
   const [isSignedUp, setIsSignedUp] = React.useState(false);
   const navigate = useNavigate();
-
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  
   const handleOpen = () => {
     setOpen(!open);
+  };
+
+  const handleMethodSelect = (method: string) => {
+    setSelectedMethod(method);
+    setOpen(false);
   };
 
   return (
@@ -39,22 +47,22 @@ const Container = ({ children }: { children: React.ReactNode }) => {
             <button onClick={() => navigate('/Sign-up')}>Form-based</button>
           </li>
           <li className='menu-item'>
-            <button>OAuth</button>
+            <button onClick={() => handleMethodSelect('oauth')}>OAuth</button>
           </li>
           <li className='menu-item'>
-            <button>Passkey</button>
+            <button onClick={() => handleMethodSelect('passkey')}>Passkey</button>
           </li>
         </ul>
       ) : null}
       <div className='bottom-container'>
-        {/* <SignUp></SignUp> */}
+        {/* {selectedMethod === 'form' && <SignUp />} */}
         {/* {isSignedUp ? (
           <Login />
         ) : (
           <SignUp onSignUpSuccess={() => setIsSignedUp(true)} />
         )} */}
-        {/* <Login></Login> */}
-        {/* <ForgotPW></ForgotPW> */}
+        {selectedMethod === 'oauth' && <OAuthButtons />} 
+        {selectedMethod === 'passkey' && <div>Passkey Component</div>}
         {/* <Passkey></Passkey> */}
         {/* <Dashboard></Dashboard> */}
       </div>
