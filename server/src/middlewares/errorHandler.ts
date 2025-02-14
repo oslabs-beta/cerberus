@@ -9,6 +9,7 @@ interface CustomError extends Error {
   log?: string;
   status?: number;
   customMessage?: ErrorMessage;
+  code?: string | number;
 }
 
 export const errorHandler = (
@@ -17,7 +18,6 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ): void => {
-  // Define a default error structure
   const defaultErr: CustomError = {
     name: 'ServerError',
     message: 'An error occurred',
@@ -26,6 +26,16 @@ export const errorHandler = (
     customMessage: { error: 'An error occurred' },
   };
 
+  console.error('Detailed error:', {
+    message: err.message,
+    stack: err.stack,
+    name: err.name,
+    // If using CustomError class
+    code: err.code,
+    status: err.status,
+  });
+  // Define a default error structure
+
   // Merge the incoming error with our default
   const errorObj = { ...defaultErr, ...err };
 
@@ -33,5 +43,8 @@ export const errorHandler = (
   console.error(errorObj.log);
 
   // Return the response
-  return res.status(errorObj.status || 500).json(errorObj.message);
+  // return res.status(errorObj.status || 500).json(errorObj.message);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+  });
 };

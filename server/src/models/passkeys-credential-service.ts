@@ -50,7 +50,8 @@ export const credentialService = {
                 credential_id,
                 public_key,
                 signature_count,
-                transports
+                transports,
+                attestation_type
          FROM credentials
          WHERE credential_id = $1
          LIMIT 1`,
@@ -62,13 +63,27 @@ export const credentialService = {
       }
 
       const row = result.rows[0];
+
+      // Ensure transports is an array
+      let transports: string[] = [];
+      if (row.transports) {
+        // If it's a string (comma-separated), split it
+        if (typeof row.transports === 'string') {
+          transports = row.transports.split(',').map((t) => t.trim());
+        }
+        // If it's already an array, use it
+        else if (Array.isArray(row.transports)) {
+          transports = row.transports;
+        }
+      }
       return {
         userID: row.user_id,
         credentialID: row.credential_id,
         credentialPublicKey: row.public_key,
         counter: row.signature_count,
         // If 'transports' is truly TEXT[], the driver should parse it as a JS array
-        transports: row.transports || [],
+        transports: transports,
+        attestationType: row.attestation_type,
       };
     } catch (error) {
       console.error('Error retrieving credential:', error);
@@ -92,6 +107,30 @@ export const credentialService = {
       );
     } catch (error) {
       console.error('Error updating credential counter:', error);
+      throw error;
+    }
+  },
+
+  async getCredentialsByUserId(
+    userId: number
+  ): Promise<DBAuthenticatorDevice[]> {
+    try {
+      const result = await query(
+        `SELECT * FROM credentials WHERE user_id = $1`,
+        [userId]
+      );
+      return result.rows.map((row) => ({
+        userID: row.user_id,
+        credentialID: row.credential_id,
+        credentialPublicKey: row.public_key,
+        counter: row.signature_count,
+        transports: Array.isArray(row.transports)
+          ? row.transports
+          : row.transports.split(','),
+        attestationType: row.attestation_type,
+      }));
+    } catch (error) {
+      console.error('Error retrieving credentials:', error);
       throw error;
     }
   },
