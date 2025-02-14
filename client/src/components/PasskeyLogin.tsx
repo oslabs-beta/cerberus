@@ -22,7 +22,7 @@ const PasskeyLogin = () => {
       </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <button type='submit' disabled={isLoading}>
-        {isLoading ? 'Creating...' : 'Create Passkey'}
+        {isLoading ? 'Logging in...' : 'Login now'}
       </button>
     </form>
   );

@@ -25,6 +25,9 @@ const CreatePasskey = () => {
       <button type='submit' disabled={isLoading}>
         {isLoading ? 'Creating...' : 'Create Passkey'}
       </button>
+      <div>
+        Already have an account? <a href='/login-passkey'>Click here</a>
+      </div>
     </form>
   );
 };
