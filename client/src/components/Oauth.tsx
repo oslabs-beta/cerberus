@@ -1,4 +1,4 @@
-import useOAuth from '../hooks/useOAuth';
+import useOAuth from '../hooks/useOauth';
 
 const AuthButtons = () => {
   const { startOAuth } = useOAuth();

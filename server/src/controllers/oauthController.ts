@@ -1,17 +1,15 @@
 import { Request, Response } from 'express';
 import fetch from 'node-fetch';
 import jwt from 'jsonwebtoken';
-import { User } from '../entities/User';
-import { AppDataSource } from '../data-source';
+import { query } from '../config/database'; 
 
-
-const issueToken = (user: User, res: Response) => {
+const issueToken = (user: any, res: Response) => {
   const token = jwt.sign(
     { userId: user.id },
     process.env.JWT_SECRET!,
     { expiresIn: '1h' }
   );
-  
+
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -19,17 +17,14 @@ const issueToken = (user: User, res: Response) => {
   });
 };
 
-
 export const githubCallback = async (req: Request, res: Response) => {
   try {
     const { code, state } = req.query;
-    const savedState = sessionStorage.getItem('oauth_state');
-    
 
-    if (state !== savedState) {
-      return res.status(403).json({ error: 'Invalid state' });
-    }
-
+    // const savedState = sessionStorage.getItem('oauth_state');
+    // if (state !== savedState) {
+    //   return res.status(403).json({ error: 'Invalid state' });
+    // }
 
     const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
@@ -42,23 +37,36 @@ export const githubCallback = async (req: Request, res: Response) => {
     });
     const tokenData = await tokenRes.json();
 
-
     const userRes = await fetch('https://api.github.com/user', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
     const profile = await userRes.json();
 
 
-    const userRepo = AppDataSource.getRepository(User);
-    const user = await userRepo.upsert({
-      githubId: profile.id.toString(),
-      email: profile.email || `${profile.login}@github.com`,
-      name: profile.name || profile.login,
-      avatarUrl: profile.avatar_url,
-      provider: 'github',
-    }, ['githubId']);
+    const existingUser = await query(
+      'SELECT * FROM users WHERE github_id = $1',
+      [profile.id.toString()]
+    );
 
-    issueToken(user.generatedMaps[0], res);
+    let user;
+    if (existingUser.rowCount > 0) {
+      user = existingUser.rows[0]; 
+    } else {
+
+      const newUser = await query(
+        'INSERT INTO users (github_id, email, name, avatar_url, provider) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [
+          profile.id.toString(),
+          profile.email || `${profile.login}@github.com`,
+          profile.name || profile.login,
+          profile.avatar_url,
+          'github',
+        ]
+      );
+      user = newUser.rows[0];
+    }
+
+    issueToken(user, res);
     res.redirect('/');
   } catch (err) {
     console.error('GitHub OAuth error:', err);
@@ -66,16 +74,13 @@ export const githubCallback = async (req: Request, res: Response) => {
   }
 };
 
-
 export const googleCallback = async (req: Request, res: Response) => {
   try {
     const { code, state } = req.query;
-    const savedState = sessionStorage.getItem('oauth_state');
-
-    if (state !== savedState) {
-      return res.status(403).json({ error: 'Invalid state' });
-    }
-
+    // const savedState = sessionStorage.getItem('oauth_state');
+    // if (state !== savedState) {
+    //   return res.status(403).json({ error: 'Invalid state' });
+    // }
 
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -90,23 +95,36 @@ export const googleCallback = async (req: Request, res: Response) => {
     });
     const tokenData = await tokenRes.json();
 
-
     const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
     const profile = await userRes.json();
 
 
-    const userRepo = AppDataSource.getRepository(User);
-    const user = await userRepo.upsert({
-      googleId: profile.id,
-      email: profile.email,
-      name: profile.name,
-      avatarUrl: profile.picture,
-      provider: 'google',
-    }, ['googleId']);
+    const existingUser = await query(
+      'SELECT * FROM users WHERE google_id = $1',
+      [profile.id]
+    );
 
-    issueToken(user.generatedMaps[0], res);
+    let user;
+    if (existingUser.rowCount > 0) {
+      user = existingUser.rows[0];
+    } else {
+
+      const newUser = await query(
+        'INSERT INTO users (google_id, email, name, avatar_url, provider) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [
+          profile.id,
+          profile.email,
+          profile.name,
+          profile.picture,
+          'google',
+        ]
+      );
+      user = newUser.rows[0];
+    }
+
+    issueToken(user, res);
     res.redirect('/');
   } catch (err) {
     console.error('Google OAuth error:', err);

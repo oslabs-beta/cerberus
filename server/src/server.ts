@@ -7,6 +7,8 @@ import authRouter from './routes/auth';
 import passkeyRouter from './routes/passkey-routes';
 import session from 'express-session';
 import { errorHandler } from './middlewares/errorHandler';
+import cookieParser from 'cookie-parser';
+import oauthRouter from './routes/oauthRoutes'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -38,6 +40,7 @@ app.set('trust proxy', true);
  * in req.body
  */
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // The following sets up a session-management cookie (connect.sid)
@@ -67,7 +70,8 @@ app.use(express.static(join(__dirname, '../../client/dist')));
 
 // Form-based authentication routes
 app.use('/api/auth', authRouter);
-
+// oauth authentication routes
+app.use('/api/oauth', oauthRouter)
 // Passkeys-based authentication routes
 app.use('/api/passkey', passkeyRouter);
 
