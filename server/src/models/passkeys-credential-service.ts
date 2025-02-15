@@ -85,12 +85,19 @@ export const credentialService = {
         ]
       );
 
-      return credentialResult.rows[0].id;
-
       await query('COMMIT');
+      return credentialResult.rows[0].id;
     } catch (error) {
       await query('ROLLBACK');
       console.error('Error saving new credential:', error);
+      console.error('Failed values:', {
+        userId,
+        credentialId,
+        publicKeyLength: publicKey.length,
+        counter,
+        transports,
+        attestationType,
+      });
       throw error;
     }
   },
