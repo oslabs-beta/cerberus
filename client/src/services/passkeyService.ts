@@ -58,9 +58,6 @@ const createPasskey = async (email: string) => {
     const registrationResponse = await startRegistration(options);
     console.log('Registration response:', registrationResponse);
 
-    // const attestationResponse = await startRegistration(options);
-    // console.log('Attestation response:', attestationResponse);
-
     // Send attestationResponse back to server for verification and storage.
     const finishResponse = await fetch('/api/passkey/register-finish', {
       method: 'POST',
