@@ -41,13 +41,26 @@ export const handleLoginStart = async (
     const userCredentials = await credentialService.getCredentialsByUserId(
       user.id
     );
+    console.log('Retrieved credentials:', userCredentials); // Add logging
 
     // Format credentials for WebAuthn
-    const allowCredentials = userCredentials.map((cred) => ({
-      id: cred.credentialID,
-      type: 'public-key' as const,
-      transports: cred.transports as AuthenticatorTransportFuture[],
-    }));
+    const allowCredentials = userCredentials.map((cred) => {
+      console.log('Processing credential:', cred); // Add logging
+      // First decode from base64 to buffer
+      const credentialBuffer = Buffer.from(cred.credentialID, 'base64');
+      // Then encode to base64url
+      const credentialId = isoBase64URL.fromBuffer(credentialBuffer);
+
+      console.log('Original credentialID:', cred.credentialID);
+      console.log('Converted credentialID:', credentialId);
+      return {
+        id: credentialId,
+        type: 'public-key' as const,
+        transports: cred.transports as AuthenticatorTransportFuture[],
+      };
+    });
+
+    console.log('Final allowCredentials:', allowCredentials);
 
     req.session.loggedInUserId = user.id;
     console.log('Session ID set:', req.session.loggedInUserId);
@@ -57,17 +70,23 @@ export const handleLoginStart = async (
     const options = await generateAuthenticationOptions({
       timeout: 60000,
       allowCredentials,
-      userVerification: 'required',
+      userVerification: 'preferred',
       rpID,
+      // authenticatorAttachment: 'platform',
+      // residentKey: 'required',
     });
 
     console.log('Generated options:', options);
 
+    req.session.loggedInUserId = user.id;
     req.session.currentChallenge = options.challenge;
+    console.log('Generated authentication options:', options); // Add logging
+
     res.locals.options = options;
     next();
   } catch (error) {
-    console.error('Login start error:', error);
+    console.error('Login start detailed error:', error); // Add better error logging
+
     next(
       error instanceof CustomError
         ? error

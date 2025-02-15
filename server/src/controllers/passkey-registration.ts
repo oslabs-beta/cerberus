@@ -2,11 +2,11 @@ import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
 } from '@simplewebauthn/server';
-import { uint8ArrayToBase64 } from '../utils/passkeys-utils';
+import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { rpName, rpID, origin } from '../utils/passkeys-constants';
 import { credentialService } from '../models/passkeys-credential-service';
 import { userService } from '../models/passkeys-user-service';
-import type { RegistrationResponseJSON } from '@simplewebauthn/types';
+import type { GenerateRegistrationOptionsOpts } from '@simplewebauthn/server';
 import type { Request, Response, NextFunction } from 'express';
 import { CustomError } from '../middlewares/customError';
 
@@ -15,6 +15,7 @@ export const handleRegisterStart = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log('Starting registration process with body:', req.body);
   const { email } = req.body;
 
   if (!email) {
@@ -22,39 +23,56 @@ export const handleRegisterStart = async (
   }
 
   try {
+    console.log('Fetching user for email:', email);
     let user = await userService.getUserByEmail(email);
-    if (user) {
-      // frontend needs to notify user that a passkey already exists and
-      // adding from the same device is not possible
-      // OR ELSE, we must allow user to create a new passkey as well!
-      return next(new CustomError('Email already exists', 400));
-    } else {
+    if (!user) {
+      console.log('User not found, creating new user');
       user = await userService.createUser(email);
     }
+    console.log('User found/created:', user);
 
-    const options = await generateRegistrationOptions({
+    const registrationOptions: GenerateRegistrationOptionsOpts = {
       rpName,
       rpID,
-      userID: user.id,
+      userID: new Uint8Array(Buffer.from(user.id.toString())), // Convert number to string
       userName: user.email,
       timeout: 60000,
-      attestationType: 'direct',
-      excludeCredentials: [],
+      attestationType: 'none',
       authenticatorSelection: {
-        residentKey: 'preferred',
+        residentKey: 'required',
+        userVerification: 'preferred',
+        authenticatorAttachment: 'platform',
       },
       // Support for the two most common algorithms: ES256, and RS256
       supportedAlgorithmIDs: [-7, -257],
-    });
-    // storing user id and current challenge into this session
+    };
+
+    console.log('Generating registration options:', registrationOptions);
+
+    const options = await generateRegistrationOptions(registrationOptions);
+    console.log('Generated options:', options);
+
     req.session.loggedInUserId = user.id;
     req.session.currentChallenge = options.challenge;
-    // remove this later
-    // console.log(options);
+
+    console.log('Session data set:', {
+      userId: req.session.loggedInUserId,
+      challenge: req.session.currentChallenge,
+      rpID,
+      origin,
+    });
+
     res.locals.options = options;
     next();
     // res.send(options);
   } catch (error) {
+    console.error('Registration error details:', error);
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+
     next(
       error instanceof CustomError
         ? error
@@ -71,8 +89,11 @@ export const handleRegisterFinish = async (
   const { body } = req;
   const { currentChallenge, loggedInUserId } = req.session;
 
-  console.log('Session data:', { currentChallenge, loggedInUserId });
-  console.log('Request body:', body);
+  console.log('Registration finish - Session data:', {
+    currentChallenge,
+    loggedInUserId,
+  });
+  console.log('Registration finish - Request body:', body);
 
   if (!loggedInUserId) {
     return next(new CustomError('User ID is missing', 400));
@@ -84,7 +105,7 @@ export const handleRegisterFinish = async (
 
   try {
     const verification = await verifyRegistrationResponse({
-      response: body as RegistrationResponseJSON,
+      response: body,
       expectedChallenge: currentChallenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
@@ -95,24 +116,25 @@ export const handleRegisterFinish = async (
 
     if (verification.verified && verification.registrationInfo) {
       const { credential } = verification.registrationInfo;
-      const credentialID = new Uint8Array(Buffer.from(credential.id, 'base64'));
-      const credentialPublicKey =
-        verification.registrationInfo.credential.publicKey;
-      const counter = credential.counter;
 
-      const attestationType = verification.registrationInfo.fmt || 'none';
+      const credentialIdBase64 = isoBase64URL.toBase64(credential.id);
 
-      await credentialService.saveNewCredential(
-        parseInt(loggedInUserId),
-        uint8ArrayToBase64(credentialID),
-        uint8ArrayToBase64(credentialPublicKey),
-        counter,
-        body.response.transports,
-        attestationType
-      );
-      res.locals.verified = true;
-      next();
-      // res.send({ verified: true });
+      try {
+        await credentialService.saveNewCredential(
+          parseInt(loggedInUserId),
+          credentialIdBase64,
+          Buffer.from(credential.publicKey).toString('base64'),
+          credential.counter,
+          credential.transports || [],
+          verification.registrationInfo.fmt || 'none'
+        );
+
+        res.locals.verified = true;
+        next();
+      } catch (error) {
+        console.error('Error saving credential:', error);
+        next(new CustomError('Failed to save credential', 500));
+      }
     } else {
       next(new CustomError('Verification failed', 400));
     }

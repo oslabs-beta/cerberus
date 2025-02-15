@@ -2,49 +2,91 @@ import {
   startRegistration,
   startAuthentication,
 } from '@simplewebauthn/browser';
+import type {
+  PublicKeyCredentialCreationOptionsJSON,
+  RegistrationResponseJSON,
+} from '@simplewebauthn/types';
+
+interface NavigatorWithUserAgentData extends Navigator {
+  userAgentData?: {
+    getHighEntropyValues(hints: string[]): Promise<{
+      platform: string;
+      [key: string]: any;
+    }>;
+  };
+}
+
+const getDeviceInfo = async () => {
+  const deviceType = await generateFriendlyDeviceName();
+  const deviceIdentifier = await getDeviceIdentifier();
+
+  return {
+    deviceIdentifier,
+    deviceType,
+    deviceName: deviceType, // Use the friendly name here
+  };
+};
 
 const createPasskey = async (email: string) => {
   try {
-    const response = await fetch('/api/passkey/register-start', {
+    console.log('Starting passkey creation for email:', email);
+
+    const startResponse = await fetch('/api/passkey/register-start', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email }),
+      credentials: 'include', // Important for session cookies
     });
-    console.log(response);
 
-    if (!response.ok) {
-      throw new Error('Failed to create passkey');
+    if (!startResponse.ok) {
+      const errorText = await startResponse.text();
+      console.error('Registration start failed:', {
+        status: startResponse.status,
+        statusText: startResponse.statusText,
+        error: errorText,
+      });
+      throw new Error(`Failed to start registration: ${errorText}`);
     }
     // convert registration options to JSON
-    const options = await response.json();
+    const options: PublicKeyCredentialCreationOptionsJSON =
+      await startResponse.json();
     console.log('Registration options returned by server:', options);
 
-    const attestationResponse = await startRegistration(options);
-    console.log('Attestation response:', attestationResponse);
+    // Start the registration process
+    const registrationResponse = await startRegistration(options);
+    console.log('Registration response:', registrationResponse);
+
+    // const attestationResponse = await startRegistration(options);
+    // console.log('Attestation response:', attestationResponse);
 
     // Send attestationResponse back to server for verification and storage.
-    const verificationResponse = await fetch('/api/passkey/register-finish', {
+    const finishResponse = await fetch('/api/passkey/register-finish', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(attestationResponse),
+      body: JSON.stringify(registrationResponse),
+      credentials: 'include', // Important for session cookies
     });
-    if (verificationResponse.ok) {
-      alert('Registration successful');
-    } else {
-      alert('Registration failed');
+    if (!finishResponse.ok) {
+      const errorText = await finishResponse.text();
+      console.error('Registration finish failed:', {
+        status: finishResponse.status,
+        statusText: finishResponse.statusText,
+        error: errorText,
+      });
+      throw new Error(`Registration verification failed: ${errorText}`);
     }
+    const verificationResult = await finishResponse.json();
+    console.log('Registration verification result:', verificationResult);
+    return verificationResult.verified;
   } catch (error) {
-    console.error('Error creating passkey:', error);
+    console.error('Passkey creation error:', error);
     throw error;
   }
 };
 
 const login = async (email: string) => {
-  // Retrieve the username from the input field
-  // const email = document.getElementById('username').value;
-
   try {
     console.log('Sending login-start request for email:', email);
     // Get login options from your server. Here, we also receive the challenge.
@@ -89,6 +131,69 @@ const login = async (email: string) => {
       throw new Error(`Passkey login failed: ${error.message}`);
     }
     throw new Error('Passkey login failed: Unknown error');
+  }
+};
+
+// Helper function to generate a unique device identifier
+const getDeviceIdentifier = async (): Promise<string> => {
+  // This is a simple implementation. In production, you might want to use
+  // more sophisticated device fingerprinting
+  const fingerprint = [
+    navigator.userAgent,
+    navigator.language,
+    window.screen.colorDepth,
+    window.screen.width + 'x' + window.screen.height,
+    // Get timezone offset in minutes
+    new Date().getTimezoneOffset(),
+    // Check if touch is supported
+    'ontouchstart' in window ? 'touch' : 'no-touch',
+  ].join('|');
+
+  // Create a hash of the fingerprint
+  const encoder = new TextEncoder();
+  const data = encoder.encode(fingerprint);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+};
+
+// Helper function
+const generateFriendlyDeviceName = async (): Promise<string> => {
+  const navigator = window.navigator as NavigatorWithUserAgentData;
+
+  try {
+    // Try to get detailed platform info
+    if (navigator.userAgentData) {
+      const platformInfo = await navigator.userAgentData.getHighEntropyValues([
+        'platform',
+        'platformVersion',
+        'model',
+        'mobile',
+      ]);
+
+      // Format: "iPhone 15" or "Windows PC" or "MacBook"
+      let deviceName = platformInfo.model || platformInfo.platform;
+      if (!platformInfo.model && platformInfo.mobile) {
+        deviceName += ' Mobile';
+      } else if (!platformInfo.model) {
+        deviceName += ' PC';
+      }
+
+      return deviceName;
+    }
+
+    // Fallback to basic user agent parsing
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.includes('iphone')) return 'iPhone';
+    if (userAgent.includes('ipad')) return 'iPad';
+    if (userAgent.includes('macintosh')) return 'Mac';
+    if (userAgent.includes('windows')) return 'Windows PC';
+    if (userAgent.includes('android')) return 'Android Device';
+
+    return 'Unknown Device';
+  } catch (error) {
+    console.error('Error generating device name:', error);
+    return 'New Device';
   }
 };
 
