@@ -94,6 +94,7 @@ const login = async (email: string) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
+      credentials: 'include', // Important for session handling
     });
 
     console.log('Response status:', response.status);
@@ -105,17 +106,19 @@ const login = async (email: string) => {
     }
     // Convert the login options to JSON.
     const options = await response.json();
-    console.log('Login options received:', options);
+    console.log('Received authentication options:', options);
 
     // This triggers the browser to display the passkey / WebAuthn modal (e.g. Face ID, Touch ID, Windows Hello).
     // A new assertionResponse is created. This also means that the challenge has been signed.
     const assertionResponse = await startAuthentication(options);
+    console.log('Got assertion response:', assertionResponse);
 
     // Send assertionResponse back to server for verification.
     const verificationResponse = await fetch('/api/passkey/login-finish', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(assertionResponse),
+      credentials: 'include',
     });
 
     console.log('VerificationResponse is equal to: ', verificationResponse);
