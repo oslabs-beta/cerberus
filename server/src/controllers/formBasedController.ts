@@ -2,15 +2,9 @@
 import userModel from '../models/db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-// import crypto from 'crypto';
 // import nodemailer from 'nodemailer';
 // import type { JwtPayload } from 'jsonwebtoken';
-import type {
-  Request,
-  Response,
-  NextFunction,
-  // ErrorRequestHandler,
-} from 'express';
+import type { Request, Response, NextFunction } from 'express';
 
 // interface DecodedToken extends JwtPayload {
 //   userId: number;
@@ -63,19 +57,20 @@ interface FormBasedController {
 }
 
 const formBasedController: FormBasedController = {
-  validateRegistration: (req, res, next) => {},
-  checkExistingUser: async (req, res, next) => {},
-  hashPassword: async (req, res, next) => {},
-  createUser: async (req, res, next) => {},
-  createMongoUser: async (req, res, next) => {},
-  rollbackSupabaseUser: async (req, res, next) => {},
-  validateLoginData: (req, res, next) => {},
-  authenticateUser: async (req, res, next) => {},
-  verifyToken: (req, res, next) => {},
+  validateRegistration: (_req, _res, _next) => {},
+  checkExistingUser: async (_req, _res, _next) => {},
+  hashPassword: async (_req, _res, _next) => {},
+  createUser: async (_req, _res, _next) => {},
+  createMongoUser: async (_req, _res, _next) => {},
+  rollbackSupabaseUser: async (_req, _res, _next) => {},
+  validateLoginData: (_req, _res, _next) => {},
+  authenticateUser: async (_req, _res, _next) => {},
+  verifyToken: (_req, _res, _next) => {},
   // sendEmailPassReset: (req, res, next) => {},
 };
 
-// Here we have our collection of middleware functions, typically grouped around a specific topic
+// Here we have our collection of middleware functions,
+// typically grouped around a specific topic
 
 // validating incoming user data
 formBasedController.validateRegistration = (req, _res, next) => {
@@ -180,7 +175,7 @@ formBasedController.createUser = async (req, res, next) => {
     const user = await userModel.createUser(email, hashedPassword, fname);
 
     // Store user data (except password) in res.locals (Is this really necessary?
-    // We probably don't want to send this info back to frontend, right? CHECK)
+    // Do we want to send this info to frontend, right? CHECK)
     res.locals.user = {
       id: user.id,
       email: user.email,
@@ -294,7 +289,6 @@ formBasedController.authenticateUser = async (req, res, next) => {
       secure: process.env.NODE_ENV === 'production', // this ensures cross-site cookies are only accessible over HTTPS connections
       sameSite: 'strict', // check to see if we need this
       maxAge: cookieMaxAgeMs, // cookie's expiration
-      // path: '/',                                   // default is '/', can be set as needed
     });
 
     // Remove sensitive data before sending

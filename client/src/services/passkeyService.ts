@@ -2,30 +2,27 @@ import {
   startRegistration,
   startAuthentication,
 } from '@simplewebauthn/browser';
-import type {
-  PublicKeyCredentialCreationOptionsJSON,
-  RegistrationResponseJSON,
-} from '@simplewebauthn/types';
+import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types';
 
-interface NavigatorWithUserAgentData extends Navigator {
-  userAgentData?: {
-    getHighEntropyValues(hints: string[]): Promise<{
-      platform: string;
-      [key: string]: any;
-    }>;
-  };
-}
+// interface NavigatorWithUserAgentData extends Navigator {
+//   userAgentData?: {
+//     getHighEntropyValues(hints: string[]): Promise<{
+//       platform: string;
+//       [key: string]: any;
+//     }>;
+//   };
+// }
 
-const getDeviceInfo = async () => {
-  const deviceType = await generateFriendlyDeviceName();
-  const deviceIdentifier = await getDeviceIdentifier();
+// const getDeviceInfo = async () => {
+//   const deviceType = await generateFriendlyDeviceName();
+//   const deviceIdentifier = await getDeviceIdentifier();
 
-  return {
-    deviceIdentifier,
-    deviceType,
-    deviceName: deviceType, // Use the friendly name here
-  };
-};
+//   return {
+//     deviceIdentifier,
+//     deviceType,
+//     deviceName: deviceType, // Use the friendly name here
+//   };
+// };
 
 const createPasskey = async (email: string) => {
   try {
@@ -55,7 +52,10 @@ const createPasskey = async (email: string) => {
     console.log('Registration options returned by server:', options);
 
     // Start the registration process
-    const registrationResponse = await startRegistration(options);
+    const registrationResponse = await startRegistration({
+      optionsJSON: options,
+    });
+    // const registrationResponse = await startRegistration(options);
     console.log('Registration response:', registrationResponse);
 
     // Send attestationResponse back to server for verification and storage.
@@ -135,66 +135,66 @@ const login = async (email: string) => {
 };
 
 // Helper function to generate a unique device identifier
-const getDeviceIdentifier = async (): Promise<string> => {
-  // This is a simple implementation. In production, you might want to use
-  // more sophisticated device fingerprinting
-  const fingerprint = [
-    navigator.userAgent,
-    navigator.language,
-    window.screen.colorDepth,
-    window.screen.width + 'x' + window.screen.height,
-    // Get timezone offset in minutes
-    new Date().getTimezoneOffset(),
-    // Check if touch is supported
-    'ontouchstart' in window ? 'touch' : 'no-touch',
-  ].join('|');
+// const getDeviceIdentifier = async (): Promise<string> => {
+//   // This is a simple implementation. In production, you might want to use
+//   // more sophisticated device fingerprinting
+//   const fingerprint = [
+//     navigator.userAgent,
+//     navigator.language,
+//     window.screen.colorDepth,
+//     window.screen.width + 'x' + window.screen.height,
+//     // Get timezone offset in minutes
+//     new Date().getTimezoneOffset(),
+//     // Check if touch is supported
+//     'ontouchstart' in window ? 'touch' : 'no-touch',
+//   ].join('|');
 
-  // Create a hash of the fingerprint
-  const encoder = new TextEncoder();
-  const data = encoder.encode(fingerprint);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-};
+//   // Create a hash of the fingerprint
+//   const encoder = new TextEncoder();
+//   const data = encoder.encode(fingerprint);
+//   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+//   const hashArray = Array.from(new Uint8Array(hashBuffer));
+//   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+// };
 
-// Helper function
-const generateFriendlyDeviceName = async (): Promise<string> => {
-  const navigator = window.navigator as NavigatorWithUserAgentData;
+// // Helper function
+// const generateFriendlyDeviceName = async (): Promise<string> => {
+//   const navigator = window.navigator as NavigatorWithUserAgentData;
 
-  try {
-    // Try to get detailed platform info
-    if (navigator.userAgentData) {
-      const platformInfo = await navigator.userAgentData.getHighEntropyValues([
-        'platform',
-        'platformVersion',
-        'model',
-        'mobile',
-      ]);
+//   try {
+//     // Try to get detailed platform info
+//     if (navigator.userAgentData) {
+//       const platformInfo = await navigator.userAgentData.getHighEntropyValues([
+//         'platform',
+//         'platformVersion',
+//         'model',
+//         'mobile',
+//       ]);
 
-      // Format: "iPhone 15" or "Windows PC" or "MacBook"
-      let deviceName = platformInfo.model || platformInfo.platform;
-      if (!platformInfo.model && platformInfo.mobile) {
-        deviceName += ' Mobile';
-      } else if (!platformInfo.model) {
-        deviceName += ' PC';
-      }
+//       // Format: "iPhone 15" or "Windows PC" or "MacBook"
+//       let deviceName = platformInfo.model || platformInfo.platform;
+//       if (!platformInfo.model && platformInfo.mobile) {
+//         deviceName += ' Mobile';
+//       } else if (!platformInfo.model) {
+//         deviceName += ' PC';
+//       }
 
-      return deviceName;
-    }
+//       return deviceName;
+//     }
 
-    // Fallback to basic user agent parsing
-    const userAgent = navigator.userAgent.toLowerCase();
-    if (userAgent.includes('iphone')) return 'iPhone';
-    if (userAgent.includes('ipad')) return 'iPad';
-    if (userAgent.includes('macintosh')) return 'Mac';
-    if (userAgent.includes('windows')) return 'Windows PC';
-    if (userAgent.includes('android')) return 'Android Device';
+//     // Fallback to basic user agent parsing
+//     const userAgent = navigator.userAgent.toLowerCase();
+//     if (userAgent.includes('iphone')) return 'iPhone';
+//     if (userAgent.includes('ipad')) return 'iPad';
+//     if (userAgent.includes('macintosh')) return 'Mac';
+//     if (userAgent.includes('windows')) return 'Windows PC';
+//     if (userAgent.includes('android')) return 'Android Device';
 
-    return 'Unknown Device';
-  } catch (error) {
-    console.error('Error generating device name:', error);
-    return 'New Device';
-  }
-};
+//     return 'Unknown Device';
+//   } catch (error) {
+//     console.error('Error generating device name:', error);
+//     return 'New Device';
+//   }
+// };
 
 export { createPasskey, login };
