@@ -1,10 +1,5 @@
 import express, { Router } from 'express';
-import type {
-  Request,
-  Response,
-  // NextFunction,
-  // ErrorRequestHandler,
-} from 'express';
+import type { Request, Response } from 'express';
 import formBasedController from '../controllers/formBasedController';
 
 const router: Router = express.Router();
