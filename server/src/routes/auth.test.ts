@@ -43,8 +43,8 @@ describe('Authentication Routes', () => {
     const validRegistrationData = {
       email: 'test@example.com',
       password: 'Password123!',
-      firstName: 'John',
-      lastName: 'Doe',
+      // firstName: 'John',
+      // lastName: 'Doe',
     };
 
     it('should successfully register a new user', async () => {
