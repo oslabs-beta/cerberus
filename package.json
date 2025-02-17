@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "preview": "cd client && vite preview",
     "start": "node --experimental-specifier-resolution=node server/dist/server.js",
-    "test": "vitest --run --reporter verbose --globals"
+    "test": "NODE_ENV=test vitest --run --reporter verbose --globals",
+    "test:watch": "NODE_ENV=test vitest"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

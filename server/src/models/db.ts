@@ -1,4 +1,3 @@
-// db.ts - This is your model layer
 import { query } from '../config/database';
 import type { QueryResult } from 'pg';
 
@@ -29,11 +28,6 @@ export const userModel = {
     isActive: boolean = true,
     emailVerified: boolean = false
   ): Promise<User> {
-    /**
-     * We’ll build arrays of columns, placeholders, and values
-     * in one pass. Then we handle `created_at` as CURRENT_TIMESTAMP
-     * without needing a placeholder for it.
-     */
     const columns: string[] = [
       'email',
       'password_hash',
@@ -69,9 +63,14 @@ export const userModel = {
     try {
       const res: QueryResult<User> = await query(text, values);
       return res.rows[0];
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 23505 is the 'unique_violation' error in Postgres
-      if (error.code === '23505') {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === '23505'
+      ) {
         throw new Error('Email already exists');
       }
       console.error('Database error in createUser:', error);
@@ -145,16 +144,6 @@ export const userModel = {
       throw new Error('Error fetching login history');
     }
   },
-
-  // JUST ADDED
-  // storeResetToken: async (userId: number, token: string, expiry: Date) => {
-  //   const query = `
-  //     UPDATE users
-  //     SET reset_token = $1, reset_token_expiry = $2
-  //     WHERE id = $3
-  //   `;
-  //   await pool.query(query, [token, expiry, userId]);
-  // },
 };
 
 export default userModel;

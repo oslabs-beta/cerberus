@@ -18,9 +18,15 @@ export const handleRegisterStart = async (
   console.log('Starting registration process with body:', req.body);
   const { email } = req.body;
 
-  if (!email) {
-    return next(new CustomError('Email empty', 400));
+  // Add email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    return next(new CustomError('Invalid email format', 400));
   }
+
+  // if (!email) {
+  //   return next(new CustomError('Email empty', 400));
+  // }
 
   try {
     console.log('Fetching user for email:', email);
