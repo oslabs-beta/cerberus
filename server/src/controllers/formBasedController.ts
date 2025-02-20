@@ -126,19 +126,26 @@ formBasedController.validateRegistration = (req, _res, next) => {
 };
 
 // Check if user already exists
-formBasedController.checkExistingUser = async (req, _res, next) => {
+formBasedController.checkExistingUser = async (req, res, next) => {
   const { email } = req.body;
 
   try {
     const existingUser = await userModel.getUserByEmail(email);
 
-    if (existingUser) {
+    if (existingUser && existingUser.password_hash) {
+      // User exists and already has a password
+
       // need to check whether this is the appropriate response, currently this is sending the 409 message back to client, which may NOT be a best practice (bad actors thus could find out registered users)
       return next({
         log: 'User already exists',
         status: 409,
         message: { error: 'Email already registered' },
       });
+    }
+
+    // Store the existing user in res.locals if they exist (for passkey-only users)
+    if (existingUser) {
+      res.locals.existingUser = existingUser;
     }
     next();
   } catch (error) {
@@ -172,7 +179,18 @@ formBasedController.createUser = async (req, res, next) => {
   const hashedPassword = res.locals.hashedPassword;
 
   try {
-    const user = await userModel.createUser(email, hashedPassword, fname);
+    let user;
+
+    if (res.locals.existingUser) {
+      // Update existing passkey-only user with password
+      user = await userModel.updateUserPassword(
+        res.locals.existingUser.id,
+        hashedPassword
+      );
+    } else {
+      // create new user
+      user = await userModel.createUser(email, hashedPassword, fname);
+    }
 
     // Store user data (except password) in res.locals (Is this really necessary?
     // Do we want to send this info to frontend, right? CHECK)

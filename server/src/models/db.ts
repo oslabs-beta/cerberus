@@ -89,6 +89,7 @@ export const userModel = {
 
     try {
       const res: QueryResult<User> = await query(text, values);
+      // console.log(res.rows[0]);
       return res.rows[0] || null;
     } catch (error) {
       // Log the error for debugging but throw a generic error for security
@@ -142,6 +143,28 @@ export const userModel = {
     } catch (error) {
       console.error('Database error in getLoginHistory:', error);
       throw new Error('Error fetching login history');
+    }
+  },
+
+  async updateUserPassword(
+    userId: number,
+    passwordHash: string
+  ): Promise<User> {
+    const text = `
+      UPDATE users 
+      SET password_hash = $1,
+          last_updated = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id, email, created_at
+    `;
+    const values = [passwordHash, userId];
+
+    try {
+      const res: QueryResult<User> = await query(text, values);
+      return res.rows[0];
+    } catch (error) {
+      console.error('Database error in updateUserPassword:', error);
+      throw new Error('Error updating user password');
     }
   },
 };
