@@ -13,6 +13,8 @@ import Dashboard from './components/Dashboard';
 import CreatePasskey from './components/CreatePasskey';
 import PasskeyLogin from './components/PasskeyLogin';
 import ProtectedRoute from './components/ProtectedLogin';
+import Navbar from './components/Navbar';
+import './App.css';
 
 //functional component App but in typescript, state set to false to show user not authenticated
 const App: React.FC = () => {
@@ -37,6 +39,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      <Navbar />
       <Routes>
         {/* Public routes */}
         <Route path='/' element={<Container />} />
