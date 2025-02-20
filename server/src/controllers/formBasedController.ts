@@ -2,7 +2,9 @@
 import userModel from '../models/db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-// import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+
 // import type { JwtPayload } from 'jsonwebtoken';
 import type { Request, Response, NextFunction } from 'express';
 
@@ -49,11 +51,22 @@ interface FormBasedController {
     next: NextFunction
   ) => Promise<void>;
   verifyToken: (req: Request, res: Response, next: NextFunction) => void;
-  // sendEmailPassReset: (
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction
-  // ) => Promise<void>;
+  validateEmail: (req: Request, res: Response, next: NextFunction) => void;
+  sendPasswordResetEmail: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  validateResetToken: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  resetPassword: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
 }
 
 const formBasedController: FormBasedController = {
@@ -66,7 +79,10 @@ const formBasedController: FormBasedController = {
   validateLoginData: (_req, _res, _next) => {},
   authenticateUser: async (_req, _res, _next) => {},
   verifyToken: (_req, _res, _next) => {},
-  // sendEmailPassReset: (req, res, next) => {},
+  validateEmail: (_req, _res, _next) => {},
+  sendPasswordResetEmail: async (_req, _res, _next) => {},
+  validateResetToken: async (_req, _res, _next) => {},
+  resetPassword: async (_req, _res, _next) => {},
 };
 
 // Here we have our collection of middleware functions,
@@ -192,7 +208,6 @@ formBasedController.createUser = async (req, res, next) => {
       user = await userModel.createUser(email, hashedPassword, fname);
     }
 
-    // Store user data (except password) in res.locals (Is this really necessary?
     // Do we want to send this info to frontend, right? CHECK)
     res.locals.user = {
       id: user.id,
@@ -329,6 +344,138 @@ formBasedController.authenticateUser = async (req, res, next) => {
       log: 'Error in authenticateUser: ' + error,
       status: 500,
       message: { error: 'An error occurred during authentication' },
+    });
+  }
+};
+
+// Validate email middleware
+formBasedController.validateEmail = (req, _res, next) => {
+  const { email } = req.body;
+
+  if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    return next({
+      log: 'Invalid email format',
+      status: 400,
+      message: { error: 'Valid email is required' },
+    });
+  }
+
+  next();
+};
+
+// Send password reset email middleware
+formBasedController.sendPasswordResetEmail = async (req, _res, next) => {
+  const { email } = req.body;
+
+  try {
+    // Check if user exists
+    const user = await userModel.getUserByEmail(email);
+
+    if (!user) {
+      // Don't reveal whether user exists, just end successfully
+      return next();
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+
+    // Save token in database
+    await userModel.saveResetToken(user.id, resetToken, resetTokenExpiry);
+
+    // Create email transport - configured for MailHog
+    const transporter = nodemailer.createTransport({
+      service: 'localhost',
+      port: 1025, // MailHog SMTP port
+      secure: false,
+      ignoreTLS: true, // since we're running locally
+      // auth: {
+      //   user: process.env.EMAIL_USER,
+      //   pass: process.env.EMAIL_APP_PASSWORD, // Use App Password for Gmail
+      // },
+    });
+
+    // Create reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+    // Send email
+    await transporter.sendMail({
+      // from: process.env.EMAIL_USER,
+      from: 'development@localhost',
+      to: email,
+      subject: 'Password Reset Request',
+      html: `
+        <h1>Password Reset Request</h1>
+        <p>You requested to reset your password. Click the link below to reset it:</p>
+        <a href="${resetUrl}">Reset Password</a>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `,
+    });
+    console.log(`Password reset email sent to MailHog for ${email}`);
+
+    next();
+  } catch (error) {
+    return next({
+      log: 'Error in sendPasswordResetEmail: ' + error,
+      status: 500,
+      message: { error: 'Failed to process password reset request' },
+    });
+  }
+};
+
+// Validate reset token middleware
+formBasedController.validateResetToken = async (req, res, next) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return next({
+      log: 'Missing token or new password',
+      status: 400,
+      message: { error: 'Token and new password are required' },
+    });
+  }
+
+  try {
+    const resetRequest = await userModel.getResetToken(token);
+
+    if (
+      !resetRequest ||
+      !resetRequest.is_valid ||
+      new Date() > resetRequest.expires_at
+    ) {
+      return next({
+        log: 'Invalid or expired reset token',
+        status: 400,
+        message: { error: 'Invalid or expired reset token' },
+      });
+    }
+
+    res.locals.userId = resetRequest.user_id;
+    next();
+  } catch (error) {
+    return next({
+      log: 'Error validating reset token: ' + error,
+      status: 500,
+      message: { error: 'Failed to validate reset token' },
+    });
+  }
+};
+
+// Reset password middleware
+formBasedController.resetPassword = async (_req, res, next) => {
+  const userId = res.locals.userId;
+  const hashedPassword = res.locals.hashedPassword;
+
+  try {
+    await userModel.updatePassword(userId, hashedPassword);
+    await userModel.invalidateResetToken(userId);
+    next();
+  } catch (error) {
+    return next({
+      log: 'Error resetting password: ' + error,
+      status: 500,
+      message: { error: 'Failed to reset password' },
     });
   }
 };

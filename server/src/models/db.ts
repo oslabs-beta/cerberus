@@ -167,6 +167,75 @@ export const userModel = {
       throw new Error('Error updating user password');
     }
   },
+
+  async saveResetToken(
+    userId: number,
+    token: string,
+    expiryDate: Date
+  ): Promise<void> {
+    const text = `
+      INSERT INTO password_reset_tokens (user_id, token, expires_at)
+      VALUES ($1, $2, $3)
+    `;
+    const values = [userId, token, expiryDate];
+
+    try {
+      await query(text, values);
+    } catch (error) {
+      console.error('Database error in saveResetToken:', error);
+      throw new Error('Error saving reset token');
+    }
+  },
+
+  async getResetToken(token: string) {
+    const text = `
+      SELECT user_id, expires_at, is_valid
+      FROM password_reset_tokens
+      WHERE token = $1 AND is_valid = true
+    `;
+    const values = [token];
+
+    try {
+      const result = await query(text, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Database error in getResetToken:', error);
+      throw new Error('Error fetching reset token');
+    }
+  },
+
+  async invalidateResetToken(userId: number): Promise<void> {
+    const text = `
+      UPDATE password_reset_tokens
+      SET is_valid = false
+      WHERE user_id = $1
+    `;
+    const values = [userId];
+
+    try {
+      await query(text, values);
+    } catch (error) {
+      console.error('Database error in invalidateResetToken:', error);
+      throw new Error('Error invalidating reset token');
+    }
+  },
+
+  async updatePassword(userId: number, newPasswordHash: string): Promise<void> {
+    const text = `
+      UPDATE users
+      SET password_hash = $1,
+          last_updated = CURRENT_TIMESTAMP
+      WHERE id = $2
+    `;
+    const values = [newPasswordHash, userId];
+
+    try {
+      await query(text, values);
+    } catch (error) {
+      console.error('Database error in updatePassword:', error);
+      throw new Error('Error updating password');
+    }
+  },
 };
 
 export default userModel;
