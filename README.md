@@ -1,50 +1,20 @@
-# React + TypeScript + Vite
+# Cerberus Authentication Toolkit
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Development Email Testing
 
-Currently, two official plugins are available:
+For email testing, the toolkit is set to use MailHog, thus you'll need to:
+`brew update && brew install mailhog` (on a Mac)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+(emails are not actually sent to real email addresses using MailHog)
 
-## Expanding the ESLint configuration
+When testing email features (password reset, etc.):
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. Start MailHog:
+   ```bash
+   mailhog
+   ```
+2. Access the MailHog web interface at http://localhost:8025
 
-- Configure the top-level `parserOptions` property like this:
+- All emails sent by the application will be captured there
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+3. Press Ctrl+C in the terminal where it's running to stop it

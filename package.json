@@ -48,6 +48,7 @@
     "@types/express-session": "^1.18.1",
     "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^22.13.1",
+    "@types/nodemailer": "^6.4.17",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@types/react-router-dom": "^5.3.3",
