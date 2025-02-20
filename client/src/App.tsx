@@ -14,19 +14,22 @@ import CreatePasskey from './components/CreatePasskey';
 import PasskeyLogin from './components/PasskeyLogin';
 import ProtectedRoute from './components/ProtectedLogin';
 
+//functional component App but in typescript, state set to false to show user not authenticated
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   // Check if user is authenticated on component mount
   useEffect(() => {
+    //check if token present in local storage
+    //local storage built in web api that provides a way to store key-value pairs in a web browser., getItem retrieves the value associated with the key 'authToken' from localStorage
     const token = localStorage.getItem('authToken');
     if (token) {
-      // You might want to validate the token here
+      //validate the token here
       setIsAuthenticated(true);
     }
   }, []);
 
-  // Function to handle logout
+  // Function to handle logout - remove token on logout and set authentication to false
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     setIsAuthenticated(false);

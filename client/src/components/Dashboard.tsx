@@ -1,33 +1,8 @@
-// import React from 'react';
-// import '../styles/container.css';
-// import { useState } from 'react';
-// // import SignUp from './Sign-up';
-// // import Login from './Login';
-// // import ForgotPW from './Forgot-PW';
-// // import Passkey from './Passkey';
-// import { useNavigate } from 'react-router-dom';
-
-// //container should accept and render the children from the app.tsx file
-// const Dashboard = () => {
-//   const navigate = useNavigate();
-
-//   const goToLandingPage = () => {
-//     navigate('/');
-//   };
-
-//   return (
-//     <div>
-//       <h1>Successfully logged into account!</h1>
-//       <button onClick={goToLandingPage}>Logout</button>
-//     </div>
-//   );
-// };
-// export default Dashboard;
-
 import React from 'react';
 import '../styles/container.css';
 import { useNavigate } from 'react-router-dom';
 
+//defines a TypeScript interface named DashboardProps with onLogout prop
 interface DashboardProps {
   onLogout?: () => void;
 }
@@ -35,6 +10,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
   const navigate = useNavigate();
 
+  //if logout navigate back to landing page
   const handleLogout = () => {
     // Call the onLogout function if provided
     if (onLogout) {

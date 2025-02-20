@@ -194,6 +194,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 
+//initializes theme object in MUI
 const theme = createTheme();
 
 export default function Login({ setIsAuthenticated }) {
@@ -202,13 +203,17 @@ export default function Login({ setIsAuthenticated }) {
   const [loginAttempted, setLoginAttempted] = useState(false);
   const navigate = useNavigate();
 
+  //navigate to forgotPW component on click
   const toForgotPWClick = () => {
     navigate('/Forgot-PW');
   };
 
+  //func called when form submitted, collects form data
   const handleSubmit = async (event) => {
+    //prevent default behavior of form submission
     event.preventDefault();
 
+    //create new FormData object to hold email and password
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email');
     const password = formData.get('password');
@@ -222,6 +227,8 @@ export default function Login({ setIsAuthenticated }) {
       email,
       password,
     };
+
+    //console.log(body);
 
     try {
       const response = await fetch('/api/auth/login', {
