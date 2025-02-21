@@ -30,6 +30,10 @@ vi.mock('../controllers/formBasedController', () => ({
       res.locals.expiresAt = Date.now() + 3600000; // 1 hour from now
       next();
     }),
+    validateEmail: vi.fn((_req, _res, next) => next()),
+    sendPasswordResetEmail: vi.fn((_req, _res, next) => next()),
+    validateResetToken: vi.fn((_req, _res, next) => next()),
+    resetPassword: vi.fn((_req, _res, next) => next()),
   },
 }));
 
