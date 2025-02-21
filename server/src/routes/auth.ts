@@ -62,7 +62,8 @@ router.post(
 );
 
 // for testing sending emails with MailHog -
-// MAKE SURE MAILHOG is running, go to http://localhost:8025 to vizualize it
+// MAKE SURE MAILHOG is running before sending POST request to /test-email
+// then go to http://localhost:8025 to vizualize it
 router.post('/test-email', async (_req, res) => {
   const transporter = nodemailer.createTransport({
     host: 'localhost',

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import supertest from 'supertest';
-import app from '../server'; // Adjust path to your Express app
+import app from '../server';
 import formBasedController from '../controllers/formBasedController';
 
 // Create a supertest instance
