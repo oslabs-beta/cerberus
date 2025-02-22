@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Frontend React application (Vite)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - '5173:5173' # match your Vite dev server port
+    depends_on:
+      - server
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3000 #added to connect to backend
+
+  # Backend Node/Express API
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000' # Keep original backend port
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=cerberus_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+
+  # PostgreSQL Database
+  db:
+    image: postgres:14-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=cerberus_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
