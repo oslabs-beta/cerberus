@@ -42,3 +42,25 @@
   border-top: 1px solid var(--neutral-300);
   color: var(--neutral-600);
 }
+
+:root[data-theme='dark'] .landing-footer {
+  background-color: var(--neutral-900);
+  color: var(--neutral-200);
+}
+
+:root[data-theme='dark'] .footer-section h4 {
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .footer-section a {
+  color: var(--neutral-400);
+}
+
+:root[data-theme='dark'] .footer-section a:hover {
+  color: var(--primary-light);
+}
+
+:root[data-theme='dark'] .footer-bottom {
+  border-top: 1px solid var(--neutral-600);
+  color: var(--neutral-400);
+}
