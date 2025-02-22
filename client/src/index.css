@@ -1,40 +1,59 @@
 :root {
+  /* Typography */
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Primary Colors - Earth tones for trust and stability */
+  --primary-dark: #2c5530; /* Deep forest green */
+  --primary-main: #3e7b45; /* Medium sage */
+  --primary-light: #69a297; /* Light sage */
 
+  /* Secondary Colors - Warm accents */
+  --accent-main: #d4a373; /* Warm sand */
+  --accent-light: #e9c39b; /* Light sand */
+
+  /* Neutral Colors */
+  --neutral-100: #ffffff;
+  --neutral-200: #f5f5f0;
+  --neutral-300: #e5e5e0;
+  --neutral-600: #4d4d4d;
+  --neutral-800: #2d2d2d;
+
+  /* Feedback Colors */
+  --success: #3e7b45;
+  --error: #c25e5e;
+  --warning: #d4a373;
+
+  /* System */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #242424;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
-  min-height: 320px;
-  background-color: #242424;
+  min-height: 100vh;
+  background-color: var(--neutral-200);
+  color: var(--neutral-800);
+}
+
+a {
+  font-weight: 500;
+  color: var(--primary-main);
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: var(--primary-dark);
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  color: var(--primary-dark);
 }
 
 button {
@@ -44,27 +63,18 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--primary-main);
+  color: var(--neutral-100);
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition: all 0.25s ease;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+button:hover {
+  background-color: var(--primary-dark);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
 }

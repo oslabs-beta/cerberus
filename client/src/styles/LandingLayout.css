@@ -1,0 +1,34 @@
+.layout-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-container {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  min-height: calc(100vh - var(--navbar-height));
+  margin-top: var(--navbar-height);
+}
+
+.landing-content {
+  flex: 1;
+  padding: 4rem 2rem;
+  background: linear-gradient(
+    to bottom right,
+    var(--neutral-200),
+    var(--primary-light)
+  );
+}
+
+.auth-container {
+  background: var(--neutral-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+:root {
+  --navbar-height: 64px;
+}

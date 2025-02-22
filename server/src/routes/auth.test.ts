@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import supertest from 'supertest';
-import app from '../server'; // Adjust path to your Express app
+import app from '../server';
 import formBasedController from '../controllers/formBasedController';
 
 // Create a supertest instance
@@ -30,6 +30,10 @@ vi.mock('../controllers/formBasedController', () => ({
       res.locals.expiresAt = Date.now() + 3600000; // 1 hour from now
       next();
     }),
+    validateEmail: vi.fn((_req, _res, next) => next()),
+    sendPasswordResetEmail: vi.fn((_req, _res, next) => next()),
+    validateResetToken: vi.fn((_req, _res, next) => next()),
+    resetPassword: vi.fn((_req, _res, next) => next()),
   },
 }));
 

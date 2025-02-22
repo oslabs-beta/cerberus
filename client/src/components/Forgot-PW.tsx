@@ -1,114 +1,127 @@
-import { useState } from 'react';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { useNavigate } from 'react-router-dom';
-import {
-  CenterFocusStrong,
-  NavigateBefore,
-} from '../../../node_modules/@mui/icons-material/index';
-import '../App.css';
+import React, { useState } from 'react';
+import { useFormValidation } from '../hooks/formValidation';
+import '../styles/forms.css';
 
-const theme = createTheme();
+const ForgotPassword: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-const useInput = (init: any) => {
-  const [value, setValue] = useState(init);
-  const onChange = (e: any) => {
-    setValue(e.target.value);
+  const { errors, validateEmail } = useFormValidation({
+    email: true,
+  });
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setSubmitError('');
   };
-  // return the value with the onChange function instead of setValue function
-  return [value, onChange];
-};
 
-export default function ForgotPW() {
-  const [email, emailOnChange] = useInput('');
-  const [emptyError, setEmptyError] = useState(false);
-  //ability to navigate to other endpoint
-  const navigate = useNavigate();
-  const backToSignUpClick = () => {
-    navigate('/Sign-up');
-  };
-  //function that is called when form submitted, event param is the form submission event
-  const handleSubmit = (event: any) => {
-    //prevent page from reloading
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (!email) {
-      setEmptyError(true);
+    if (!validateEmail(email)) {
+      return;
+    }
+
+    setIsLoading(true);
+    setSubmitError('');
+
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process password reset request');
+      }
+
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Password reset error:', error);
+      setSubmitError('Failed to send reset email. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  if (isSubmitted) {
+    return (
+      <div className='auth-form-container password-form'>
+        <h2 className='form-title'>Check Your Email</h2>
+        <p style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          If an account exists for {email}, we've sent password reset
+          instructions to it.
+        </p>
+        <p style={{ textAlign: 'center', color: '#666' }}>
+          Please check your email and follow the instructions to reset your
+          password.
+        </p>
+        <a href='/login' className='form-link' style={{ marginTop: '2rem' }}>
+          Return to login
+        </a>
+      </div>
+    );
+  }
+
   return (
-    <ThemeProvider theme={theme}>
-      <Container component='main' maxWidth='xs' sx={{ bgcolor: 'transparent' }}>
-        <CssBaseline />
-        <Box
-          sx={{
-            width: '100%',
-            marginTop: 35,
-            marginBottom: 10,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: 'white',
-            padding: 3,
-            borderRadius: 2,
-            boxShadow: 3,
-          }}
+    <div className='auth-form-container password-form'>
+      <h2 className='form-title'>Reset Your Password</h2>
+
+      <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#666' }}>
+        Enter your email address and we'll send you instructions to reset your
+        password.
+      </p>
+
+      {submitError && (
+        <div
+          className='form-error'
+          style={{ marginBottom: '1rem', textAlign: 'center' }}
         >
-          <Avatar sx={{ m: 1, bgcolor: '#535bf2' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component='h1' variant='h5' color='black'>
-            Forgot your password?
-          </Typography>
-          <Box
-            component='form'
-            noValidate
-            onSubmit={handleSubmit}
-            sx={{ mt: 3 }}
-          >
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                id='email'
-                label='Email Address'
-                onChange={emailOnChange}
-                name='email'
-                autoComplete='email'
-              />
-              {!email && emptyError ? (
-                <Typography color='darkRed'>Required</Typography>
-              ) : null}
-            </Grid>
-            <Button
-              type='submit'
-              fullWidth
-              variant='contained'
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Submit
-            </Button>
-            <Grid container justifyContent='flex-end'>
-              <Grid item>
-                <Link onClick={backToSignUpClick} href='#' variant='body2'>
-                  Need an account? Sign-up here
-                </Link>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Container>
-    </ThemeProvider>
+          {submitError}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div className='form-group'>
+          <label htmlFor='email' className='form-label'>
+            Email Address
+          </label>
+          <input
+            type='email'
+            id='email'
+            name='email'
+            className='form-input'
+            value={email}
+            onChange={handleEmailChange}
+            disabled={isLoading}
+            required
+          />
+          {errors.email && <div className='form-error'>{errors.email}</div>}
+        </div>
+
+        <button type='submit' className='form-button' disabled={isLoading}>
+          {isLoading ? 'Sending...' : 'Reset Password'}
+        </button>
+      </form>
+
+      <a href='/login' className='form-link'>
+        Back to login
+      </a>
+
+      <div className='form-divider'>
+        <span>or</span>
+      </div>
+
+      <a href='/login-passkey' className='form-link'>
+        Try logging in with a passkey
+      </a>
+    </div>
   );
-}
+};
+
+export default ForgotPassword;

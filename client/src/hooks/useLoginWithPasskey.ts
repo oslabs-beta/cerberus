@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import { login } from '../services/passkeyService.ts'; // API call
 import { validateEmail } from '../utils/validation.ts'; // email validation
-import { useNavigate } from 'react-router-dom';
+import { UseLoginWithPasskeyProps } from './types';
+// import { LoginResponse, UseLoginWithPasskeyProps } from './types';
 
 interface UsePasskeyFormReturn {
   email: string;
   error: string | null;
   isLoading: boolean;
-  handleEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
+  handleEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-// console.log('Loading useLoginWithPasskey.ts');
-
-export const usePasskeyLogin = (): UsePasskeyFormReturn => {
+export const usePasskeyLogin = (
+  onLogin: UseLoginWithPasskeyProps['onLogin']
+): UsePasskeyFormReturn => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -37,11 +38,18 @@ export const usePasskeyLogin = (): UsePasskeyFormReturn => {
     setError('');
 
     try {
-      const success = await login(email);
-      if (success) {
-        navigate('/Dashboard');
-        console.log('Logged in successfully!');
-      }
+      const loginResult = await login(email);
+      // After successful login, call the onLogin prop
+      onLogin({
+        token: loginResult.token,
+        user: loginResult.user,
+      });
+
+      // const success = await login(email);
+      // if (success) {
+      //   navigate('/Dashboard');
+      //   console.log('Logged in successfully!');
+      // }
     } catch (error) {
       setError('Failed to log in. Please try again.');
       console.error(error);

@@ -1,79 +1,113 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from 'react-router-dom';
-import Container from './components/Container';
+import { useAuth } from '../src/hooks/useAuth';
+
+// Components
+import LandingLayout from './components/LandingLayout';
 import SignUp from './components/Sign-up';
 import Login from './components/Login';
 import ForgotPW from './components/Forgot-PW';
 import Dashboard from './components/Dashboard';
 import CreatePasskey from './components/CreatePasskey';
 import PasskeyLogin from './components/PasskeyLogin';
-import ProtectedRoute from './components/ProtectedLogin';
-import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Styles
 import './App.css';
 
-//functional component App but in typescript, state set to false to show user not authenticated
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const { isAuthenticated, isLoading, user, handleLogin, handleLogout } =
+    useAuth();
 
-  // Check if user is authenticated on component mount
-  useEffect(() => {
-    //check if token present in local storage
-    //local storage built in web api that provides a way to store key-value pairs in a web browser., getItem retrieves the value associated with the key 'authToken' from localStorage
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      //validate the token here
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  // Function to handle logout - remove token on logout and set authentication to false
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    setIsAuthenticated(false);
-  };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Router>
-      <Navbar />
       <Routes>
-        {/* Public routes */}
-        <Route path='/' element={<Container />} />
-        <Route path='/sign-up' element={<SignUp />} />
+        {/* Public routes with landing layout */}
         <Route
-          path='/login'
           element={
-            isAuthenticated ? (
-              <Navigate to='/Dashboard' replace />
-            ) : (
-              <Login setIsAuthenticated={setIsAuthenticated} />
-            )
+            <LandingLayout
+              isAuthenticated={isAuthenticated}
+              onLogout={handleLogout}
+            />
           }
-        />
-        <Route path='/Forgot-PW' element={<ForgotPW />} />
-        <Route path='/create-passkey' element={<CreatePasskey />} />
-        <Route path='/login-passkey' element={<PasskeyLogin />} />
-
-        {/* Protected routes */}
-        <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
+        >
+          {/* Default route - CreatePasskey */}
           <Route
-            path='/Dashboard'
-            element={<Dashboard onLogout={handleLogout} />}
+            path='/'
+            element={
+              isAuthenticated ? (
+                <Navigate to='/dashboard' replace />
+              ) : (
+                <CreatePasskey />
+              )
+            }
           />
-          {/* Add any other protected routes here */}
+          <Route
+            path='/login'
+            element={
+              isAuthenticated ? (
+                <Navigate to='/dashboard' replace />
+              ) : (
+                <Login onLogin={handleLogin} />
+              )
+            }
+          />
+          {/* Passkey Login route */}
+          <Route
+            path='/login-passkey'
+            element={
+              isAuthenticated ? (
+                <Navigate to='/dashboard' replace />
+              ) : (
+                <PasskeyLogin onLogin={handleLogin} />
+              )
+            }
+          />
+
+          {/* Sign up route */}
+          <Route
+            path='/signup'
+            element={
+              isAuthenticated ? (
+                <Navigate to='/dashboard' replace />
+              ) : (
+                <SignUp />
+              )
+            }
+          />
+          <Route
+            path='/forgot-password'
+            element={
+              isAuthenticated ? (
+                <Navigate to='/dashboard' replace />
+              ) : (
+                <ForgotPW />
+              )
+            }
+          />
         </Route>
 
-        {/* Fallback route - redirect to home or dashboard based on auth status */}
+        {/* Protected routes */}
         <Route
-          path='*'
+          path='/dashboard'
           element={
-            <Navigate to={isAuthenticated ? '/Dashboard' : '/'} replace />
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <Dashboard user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
           }
         />
+
+        {/* Catch-all route */}
+        <Route path='*' element={<Navigate to='/' replace />} />
       </Routes>
     </Router>
   );
