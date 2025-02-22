@@ -1,6 +1,6 @@
 /* styles/Footer.css */
 .landing-footer {
-  background-color: #f8f9fa;
+  background-color: var(--neutral-200);
   padding: 2rem 0;
   width: 100%;
 }
@@ -23,21 +23,22 @@
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: var(--primary-dark);
 }
 
 .footer-section a {
-  color: #4b5563;
+  color: var(--neutral-600);
   text-decoration: none;
 }
 
 .footer-section a:hover {
-  color: #2563eb;
+  color: var(--primary-main);
 }
 
 .footer-bottom {
   text-align: center;
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
-  color: #6b7280;
+  border-top: 1px solid var(--neutral-300);
+  color: var(--neutral-600);
 }

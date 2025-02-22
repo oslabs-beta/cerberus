@@ -53,6 +53,13 @@ const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onLogin }) => {
         </button>
       </form>
 
+      <p style={{ textAlign: 'center' }}>
+        Don't have an account?{' '}
+        <a href='/' className='form-link'>
+          Create one here
+        </a>
+      </p>
+
       <div className='form-divider'>
         <span>or</span>
       </div>
@@ -62,35 +69,8 @@ const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onLogin }) => {
           Login with password instead
         </a>
       </p>
-
-      <p style={{ textAlign: 'center' }}>
-        Don't have an account?{' '}
-        <a href='/' className='form-link'>
-          Create one here
-        </a>
-      </p>
     </div>
   );
 };
-//   return (
-//     <form onSubmit={handleSubmit}>
-//       <div>
-//         <label htmlFor='email'>Email:</label>
-//         <input
-//           type='email'
-//           id='email'
-//           value={email}
-//           onChange={handleEmailChange}
-//           disabled={isLoading}
-//           required
-//         />
-//       </div>
-//       {error && <p style={{ color: 'red' }}>{error}</p>}
-//       <button type='submit' disabled={isLoading}>
-//         {isLoading ? 'Logging in...' : 'Login now'}
-//       </button>
-//     </form>
-//   );
-// };
 
 export default PasskeyLogin;

@@ -9,25 +9,25 @@
 
 :root {
   /* Primary Colors */
-  --primary-dark: #1a365d; /* Deep blue - main brand color */
-  --primary-main: #2b4c7e; /* Medium blue - primary actions */
-  --primary-light: #4a69bb; /* Light blue - hover states */
+  --primary-dark: #2c5530; /* Deep forest green */
+  --primary-main: #3e7b45; /* Medium sage */
+  --primary-light: #69a297; /* Light sage */
 
   /* Secondary Colors */
-  --accent-main: #6d28d9; /* Purple - for highlights/accents */
-  --accent-light: #7c3aed; /* Light purple - hover states */
+  --accent-main: #d4a373; /* Warm sand */
+  --accent-light: #e9c39b; /* Light sand */
 
   /* Neutral Colors */
-  --neutral-100: #ffffff; /* White */
-  --neutral-200: #f3f4f6; /* Light gray - backgrounds */
-  --neutral-300: #e5e7eb; /* Light gray - borders */
-  --neutral-600: #4b5563; /* Medium gray - secondary text */
-  --neutral-800: #1f2937; /* Dark gray - primary text */
+  --neutral-100: #ffffff;
+  --neutral-200: #f5f5f0; /* Slightly warm white */
+  --neutral-300: #e5e5e0;
+  --neutral-600: #4d4d4d;
+  --neutral-800: #2d2d2d;
 
   /* Feedback Colors */
-  --success: #059669; /* Green - success states */
-  --error: #dc2626; /* Red - error states */
-  --warning: #d97706; /* Orange - warning states */
+  --success: #3e7b45; /* Matching primary-main */
+  --error: #c25e5e; /* Muted red */
+  --warning: #d4a373; /* Matching accent-main */
 
   /* Spacing */
   --spacing-xs: 0.25rem;

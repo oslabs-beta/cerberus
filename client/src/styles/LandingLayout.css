@@ -1,4 +1,3 @@
-/* styles/LandingLayout.css */
 .layout-wrapper {
   min-height: 100vh;
   display: flex;
@@ -6,28 +5,28 @@
 }
 
 .landing-container {
-  display: flex;
-  flex: 1;
-  min-height: calc(100vh - var(--navbar-height)); /* Subtract navbar height */
-  margin-top: var(--navbar-height); /* Add margin for navbar */
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  min-height: calc(100vh - var(--navbar-height));
+  margin-top: var(--navbar-height);
 }
 
 .landing-content {
   flex: 1;
-  padding: 2rem;
-  background: linear-gradient(to bottom right, #f8fafc, #e0e7ff);
+  padding: 4rem 2rem;
+  background: linear-gradient(
+    to bottom right,
+    var(--neutral-200),
+    var(--primary-light)
+  );
 }
 
-/* ... rest of existing landing styles ... */
-
-/* Update auth-container to work with the new layout */
 .auth-container {
-  flex: 1;
-  padding: 2rem;
-  background: white;
+  background: var(--neutral-100);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 2rem;
 }
 
 :root {

@@ -31,6 +31,11 @@ const Footer: React.FC = () => {
           </a>
         </div>
         <div className='footer-section'>
+          <h4>Acknowledgements</h4>
+          <Link to='/contributors'>Contributors</Link>
+          <Link to='/sponsors'>Sponsors</Link>
+        </div>
+        <div className='footer-section'>
           <h4>More</h4>
           <Link to='/privacy'>Privacy</Link>
           <Link to='/terms'>Terms</Link>

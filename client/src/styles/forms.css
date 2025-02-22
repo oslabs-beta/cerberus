@@ -1,25 +1,24 @@
+/* styles/forms.css */
 .auth-form-container {
   max-width: 400px;
   margin: 2rem auto;
   padding: 2rem;
-  background-color: white;
+  background-color: var(--neutral-100);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Password-based forms get a distinct border */
 .password-form {
-  border: 2px solid #4a69bb;
+  border: 2px solid var(--primary-main);
 }
 
-/* Passkey-based forms get a different border */
 .passkey-form {
-  border: 2px solid #6d28d9;
+  border: 2px solid var(--accent-main);
 }
 
 .form-title {
   text-align: center;
-  color: #1a365d;
+  color: var(--primary-dark);
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
   font-weight: 600;
@@ -32,14 +31,14 @@
 .form-label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #4b5563;
+  color: var(--neutral-600);
   font-weight: 500;
 }
 
 .form-input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--neutral-300);
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.2s ease;
@@ -47,12 +46,12 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #4a69bb;
-  box-shadow: 0 0 0 2px rgba(74, 105, 187, 0.1);
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 2px rgba(62, 123, 69, 0.1);
 }
 
 .form-error {
-  color: #dc2626;
+  color: var(--error);
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
@@ -60,8 +59,8 @@
 .form-button {
   width: 100%;
   padding: 0.75rem;
-  background-color: #2b4c7e;
-  color: white;
+  background-color: var(--primary-main);
+  color: var(--neutral-100);
   border: none;
   border-radius: 4px;
   font-size: 1rem;
@@ -71,18 +70,18 @@
 }
 
 .form-button:hover {
-  background-color: #1a365d;
+  background-color: var(--primary-dark);
 }
 
 .form-button:disabled {
-  background-color: #9ca3af;
+  background-color: var(--neutral-300);
   cursor: not-allowed;
 }
 
 .form-link {
   display: block;
   text-align: center;
-  color: #4a69bb;
+  color: var(--primary-main);
   text-decoration: none;
   margin-top: 1rem;
   font-size: 0.875rem;
@@ -96,14 +95,14 @@
   display: flex;
   align-items: center;
   margin: 1.5rem 0;
-  color: #6b7280;
+  color: var(--neutral-600);
 }
 
 .form-divider::before,
 .form-divider::after {
   content: '';
   flex: 1;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--neutral-300);
 }
 
 .form-divider span {

@@ -1,28 +1,3 @@
-/* navbar.css */
-
-:root {
-  /* Primary Colors */
-  --primary-dark: #1a365d; /* Deep blue - main brand color */
-  --primary-main: #2b4c7e; /* Medium blue - primary actions */
-  --primary-light: #4a69bb; /* Light blue - hover states */
-
-  /* Secondary Colors */
-  --accent-main: #6d28d9; /* Purple - for highlights/accents */
-  --accent-light: #7c3aed; /* Light purple - hover states */
-
-  /* Neutral Colors */
-  --neutral-100: #ffffff; /* White */
-  --neutral-200: #f3f4f6; /* Light gray - backgrounds */
-  --neutral-300: #e5e7eb; /* Light gray - borders */
-  --neutral-600: #4b5563; /* Medium gray - secondary text */
-  --neutral-800: #1f2937; /* Dark gray - primary text */
-
-  /* Feedback Colors */
-  --success: #059669; /* Green - success states */
-  --error: #dc2626; /* Red - error states */
-  --warning: #d97706; /* Orange - warning states */
-}
-
 .navbar {
   background-color: var(--neutral-100);
   border-bottom: 1px solid var(--neutral-300);
@@ -36,13 +11,15 @@
 .navbar-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 2rem;
+  gap: 2rem;
 }
 
 .brand {
+  margin-right: auto;
   color: var(--primary-dark);
   font-size: 1.25rem;
   font-weight: 600;
@@ -123,13 +100,13 @@
 }
 
 /* Dark mode styles */
-.dark {
+/* .dark {
   --neutral-100: #1a1a1a;
   --neutral-200: #2d2d2d;
   --neutral-300: #404040;
   --neutral-600: #a3a3a3;
   --neutral-800: #f3f4f6;
-}
+} */
 
 /* Responsive styles */
 @media (max-width: 768px) {

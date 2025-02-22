@@ -1,8 +1,4 @@
-import React from 'react';
-// import { useCreatePasskey } from '@/hooks/useCreatePasskey'; // custom hook
 import { useCreatePasskey } from '../hooks/useCreatePasskey'; // custom hook
-// import createPasskey from '../services/passkeyService.ts';  // API request
-// import { validateEmail } from '../utils/validation.ts'; // email validation
 import '../styles/forms.css';
 
 const CreatePasskey = () => {
@@ -47,6 +43,13 @@ const CreatePasskey = () => {
         </button>
       </form>
 
+      <p style={{ textAlign: 'center' }}>
+        Already have a passkey?{' '}
+        <a href='/login-passkey' className='form-link'>
+          Login here
+        </a>
+      </p>
+
       <div className='form-divider'>
         <span>or</span>
       </div>
@@ -56,38 +59,8 @@ const CreatePasskey = () => {
           Sign up with password instead
         </a>
       </p>
-
-      <p style={{ textAlign: 'center' }}>
-        Already have a passkey?{' '}
-        <a href='/login-passkey' className='form-link'>
-          Login here
-        </a>
-      </p>
     </div>
   );
 };
-//   return (
-//     <form onSubmit={handleSubmit}>
-//       <div>
-//         <label htmlFor='email'>Email:</label>
-//         <input
-//           type='email'
-//           id='email'
-//           value={email}
-//           onChange={handleEmailChange}
-//           disabled={isLoading}
-//           required
-//         />
-//       </div>
-//       {error && <p style={{ color: 'red' }}>{error}</p>}
-//       <button type='submit' disabled={isLoading}>
-//         {isLoading ? 'Creating...' : 'Create Passkey'}
-//       </button>
-//       <div>
-//         Already have an account? <a href='/login-passkey'>Click here</a>
-//       </div>
-//     </form>
-//   );
-// };
 
 export default CreatePasskey;
