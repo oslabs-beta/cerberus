@@ -1,0 +1,35 @@
+/* styles/LandingLayout.css */
+.layout-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-container {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - var(--navbar-height)); /* Subtract navbar height */
+  margin-top: var(--navbar-height); /* Add margin for navbar */
+}
+
+.landing-content {
+  flex: 1;
+  padding: 2rem;
+  background: linear-gradient(to bottom right, #f8fafc, #e0e7ff);
+}
+
+/* ... rest of existing landing styles ... */
+
+/* Update auth-container to work with the new layout */
+.auth-container {
+  flex: 1;
+  padding: 2rem;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:root {
+  --navbar-height: 64px;
+}

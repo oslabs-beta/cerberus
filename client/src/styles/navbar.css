@@ -1,0 +1,147 @@
+/* navbar.css */
+
+:root {
+  /* Primary Colors */
+  --primary-dark: #1a365d; /* Deep blue - main brand color */
+  --primary-main: #2b4c7e; /* Medium blue - primary actions */
+  --primary-light: #4a69bb; /* Light blue - hover states */
+
+  /* Secondary Colors */
+  --accent-main: #6d28d9; /* Purple - for highlights/accents */
+  --accent-light: #7c3aed; /* Light purple - hover states */
+
+  /* Neutral Colors */
+  --neutral-100: #ffffff; /* White */
+  --neutral-200: #f3f4f6; /* Light gray - backgrounds */
+  --neutral-300: #e5e7eb; /* Light gray - borders */
+  --neutral-600: #4b5563; /* Medium gray - secondary text */
+  --neutral-800: #1f2937; /* Dark gray - primary text */
+
+  /* Feedback Colors */
+  --success: #059669; /* Green - success states */
+  --error: #dc2626; /* Red - error states */
+  --warning: #d97706; /* Orange - warning states */
+}
+
+.navbar {
+  background-color: var(--neutral-100);
+  border-bottom: 1px solid var(--neutral-300);
+  padding: 1rem;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.brand {
+  color: var(--primary-dark);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-item {
+  color: var(--neutral-600);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-item:hover {
+  color: var(--primary-main);
+}
+
+.search-container {
+  position: relative;
+  margin: 0 2rem;
+}
+
+.search-input {
+  width: 300px;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border: 1px solid var(--neutral-300);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--neutral-800);
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--neutral-600);
+}
+
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.github-link {
+  color: var(--neutral-600);
+  transition: color 0.2s ease;
+}
+
+.github-link:hover {
+  color: var(--neutral-800);
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--neutral-600);
+  transition: color 0.2s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--primary-main);
+}
+
+/* Dark mode styles */
+.dark {
+  --neutral-100: #1a1a1a;
+  --neutral-200: #2d2d2d;
+  --neutral-300: #404040;
+  --neutral-600: #a3a3a3;
+  --neutral-800: #f3f4f6;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .search-container {
+    margin: 0 1rem;
+  }
+
+  .search-input {
+    width: 200px;
+  }
+}

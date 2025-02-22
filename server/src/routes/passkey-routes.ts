@@ -49,6 +49,8 @@ router.post(
     res.status(200).json({
       message: 'Successful verification',
       verification: res.locals.verified,
+      user: res.locals.user,
+      token: res.locals.token,
     });
   }
 );

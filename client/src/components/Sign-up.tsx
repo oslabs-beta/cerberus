@@ -1,211 +1,152 @@
-import { useState } from 'react';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { on } from 'events';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../App.css';
+import { useFormValidation } from '../hooks/formValidation';
+import '../styles/forms.css';
 
-const theme = createTheme();
+interface SignUpProps {
+  onSignUpSuccess?: () => void;
+}
 
-const useInput = (init: any) => {
-  const [value, setValue] = useState(init);
-  const onChange = (e: any) => {
-    setValue(e.target.value);
-  };
-  // return the value with the onChange function instead of setValue function
-  return [value, onChange];
-};
-
-export default function SignUp({ onSignUpSuccess }) {
-  const [firstName, firstNameOnChange] = useInput('');
-  const [lastName, lastNameOnChange] = useInput('');
-  const [email, emailOnChange] = useInput('');
-  const [password, passwordOnChange] = useInput('');
-  const [emptyError, setEmptyError] = useState(false);
-  // const [isSignedUp, setIsSignedUp] = useState(false);
-
-  //ability to navigate to other endpoint
+const SignUp: React.FC<SignUpProps> = ({ onSignUpSuccess }) => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const goToLoginClick = () => {
-    navigate('/login');
+  const { errors, validateForm } = useFormValidation({
+    email: true,
+    password: true,
+    confirmPassword: true,
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  //function that is called when form submitted, event param is the form submission event
-  const handleSubmit = (event: any) => {
-    //prevent page from reloading
-    event.preventDefault();
-    //logs extracted values
-    console.log(firstName);
-    console.log(lastName);
-    console.log(email);
-    console.log(password);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (!firstName || !lastName || !email || !password) {
-      setEmptyError(true);
+    if (!validateForm(formData)) {
       return;
     }
 
-    const body = {
-      firstName,
-      lastName,
-      email,
-      password,
-    };
+    setIsLoading(true);
 
-    console.log('body', body);
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-    fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'Application/JSON',
-      },
-      body: JSON.stringify(body),
-    })
-      .then((resp) => resp.json())
-      .then((data) => {
-        console.log(data);
-        //calls the function from container when successful signup
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      if (onSignUpSuccess) {
         onSignUpSuccess();
-      })
-      .catch((err) => console.log('Signup fetch /: ERROR:', err));
+      }
 
-    //// After successful sign-up, redirect to Login page
-    // navigate("/login");
+      navigate('/login');
+    } catch (error) {
+      console.error('Registration error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <Container component='main' maxWidth='xs'>
-        <CssBaseline />
-        <Box
-          sx={{
-            marginTop: 30,
-            marginBottom: 30,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            bgcolor: 'white', // Set background color to white
-            padding: 3, // Add some padding
-            borderRadius: 2, // Optional: Rounded corners
-            boxShadow: 3, // Optional: Adds a slight shadow for contrast
-          }}
-        >
-          <Avatar sx={{ m: 1, bgcolor: '#535bf2' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component='h1' variant='h5' color='black'>
-            Sign up
-          </Typography>
-          <Box
-            component='form'
-            noValidate
-            onSubmit={handleSubmit}
-            sx={{ mt: 3 }}
-          >
-            <Grid container spacing={2}>
-              {/* <Grid item xs={12} sm={6}>
-                <TextField
-                  autoComplete='given-name'
-                  name='firstName'
-                  required
-                  fullWidth
-                  id='firstName'
-                  label='First Name'
-                  onChange={firstNameOnChange}
-                  autoFocus
-                />
-                {!firstName && emptyError ? (
-                  <Typography color='darkRed'>Required</Typography>
-                ) : null}
-              </Grid> */}
-              {/* <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id='lastName'
-                  label='Last Name'
-                  onChange={lastNameOnChange}
-                  name='lastName'
-                  autoComplete='family-name'
-                />
-                {!lastName && emptyError ? (
-                  <Typography color='darkRed'>Required</Typography>
-                ) : null}
-              </Grid> */}
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id='email'
-                  label='Email Address'
-                  onChange={emailOnChange}
-                  name='email'
-                  autoComplete='email'
-                />
-                {!email && emptyError ? (
-                  <Typography color='darkRed'>Required</Typography>
-                ) : null}
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name='password'
-                  label='Password'
-                  onChange={passwordOnChange}
-                  type='password'
-                  id='password'
-                  autoComplete='new-password'
-                />
-                {!password && emptyError ? (
-                  <Typography color='darkRed'>Required</Typography>
-                ) : null}
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox value='allowExtraEmails' color='primary' />
-                  }
-                  label={
-                    <Typography sx={{ color: 'black' }}>
-                      I want to receive marketing promotions and updates via
-                      email.
-                    </Typography>
-                  }
-                />
-              </Grid>
-            </Grid>
-            <Button
-              onClick={goToLoginClick}
-              type='submit'
-              fullWidth
-              variant='contained'
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Sign Up
-            </Button>
-            <Grid container justifyContent='flex-end'>
-              <Grid item>
-                <Link onClick={goToLoginClick} href='#' variant='body2'>
-                  Already have an account? Login
-                </Link>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Container>
-    </ThemeProvider>
+    <div className='auth-form-container password-form'>
+      <h2 className='form-title'>Create an Account</h2>
+      <form onSubmit={handleSubmit}>
+        <div className='form-group'>
+          <label htmlFor='email' className='form-label'>
+            Email
+          </label>
+          <input
+            type='email'
+            id='email'
+            name='email'
+            className='form-input'
+            value={formData.email}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            required
+          />
+          {errors.email && <div className='form-error'>{errors.email}</div>}
+        </div>
+
+        <div className='form-group'>
+          <label htmlFor='password' className='form-label'>
+            Password
+          </label>
+          <input
+            type='password'
+            id='password'
+            name='password'
+            className='form-input'
+            value={formData.password}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            required
+          />
+          {errors.password && (
+            <div className='form-error'>{errors.password}</div>
+          )}
+        </div>
+
+        <div className='form-group'>
+          <label htmlFor='confirmPassword' className='form-label'>
+            Confirm Password
+          </label>
+          <input
+            type='password'
+            id='confirmPassword'
+            name='confirmPassword'
+            className='form-input'
+            value={formData.confirmPassword}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            required
+          />
+          {errors.confirmPassword && (
+            <div className='form-error'>{errors.confirmPassword}</div>
+          )}
+        </div>
+
+        <button type='submit' className='form-button' disabled={isLoading}>
+          {isLoading ? 'Creating Account...' : 'Sign Up'}
+        </button>
+      </form>
+
+      <a href='/login' className='form-link'>
+        Already registered? Click here to login
+      </a>
+
+      <div className='form-divider'>
+        <span>or</span>
+      </div>
+
+      <a href='/' className='form-link'>
+        Sign up with a passkey instead
+      </a>
+    </div>
   );
-}
+};
+
+export default SignUp;
