@@ -157,6 +157,54 @@
   background-color: var(--neutral-300);
 }
 
+:root[data-theme='dark'] .dashboard-container {
+  background-color: var(--neutral-900);
+  color: var(--neutral-200);
+}
+
+:root[data-theme='dark'] .dashboard-header {
+  border-bottom: 1px solid var(--neutral-600);
+}
+
+:root[data-theme='dark'] .dashboard-title {
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .dashboard-card {
+  background-color: var(--neutral-800);
+  border: 1px solid var(--neutral-600);
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .dashboard-card:hover {
+  background-color: var(--neutral-700);
+}
+
+:root[data-theme='dark'] .info-label {
+  color: var(--neutral-400);
+}
+
+:root[data-theme='dark'] .info-value {
+  color: var(--neutral-200);
+}
+
+:root[data-theme='dark'] .stat-card {
+  background-color: var(--neutral-800);
+  color: var(--neutral-200);
+}
+
+:root[data-theme='dark'] .stat-card:hover {
+  background-color: var(--primary-dark);
+}
+
+:root[data-theme='dark'] .activity-item {
+  background-color: var(--neutral-800);
+}
+
+:root[data-theme='dark'] .activity-item:hover {
+  background-color: var(--neutral-700);
+}
+
 /* Add responsive design */
 @media (max-width: 768px) {
   .dashboard-container {

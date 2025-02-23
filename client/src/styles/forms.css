@@ -108,3 +108,32 @@
 .form-divider span {
   padding: 0 1rem;
 }
+
+:root[data-theme='dark'] .auth-form-container {
+  background-color: var(--neutral-800);
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .form-label {
+  color: var(--neutral-200);
+}
+
+:root[data-theme='dark'] .form-input {
+  background-color: var(--neutral-700);
+  color: var(--neutral-100);
+  border: 1px solid var(--neutral-600);
+}
+
+:root[data-theme='dark'] .form-input:focus {
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+:root[data-theme='dark'] .form-divider {
+  color: var(--neutral-400);
+}
+
+:root[data-theme='dark'] .form-divider::before,
+:root[data-theme='dark'] .form-divider::after {
+  border-top: 1px solid var(--neutral-600);
+}
