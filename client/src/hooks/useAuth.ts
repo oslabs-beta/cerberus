@@ -1,5 +1,3 @@
-// src/hooks/useAuth.ts
-
 import { useState, useEffect } from 'react';
 
 interface AuthState {

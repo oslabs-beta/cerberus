@@ -21,8 +21,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 const App: React.FC = () => {
-  const { isAuthenticated, isLoading, user, handleLogin, handleLogout } =
-    useAuth();
+  const { isAuthenticated, isLoading, handleLogin, handleLogout } = useAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -101,7 +100,7 @@ const App: React.FC = () => {
           path='/dashboard'
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <Dashboard user={user} onLogout={handleLogout} />
+              <Dashboard onLogout={handleLogout} />
             </ProtectedRoute>
           }
         />
