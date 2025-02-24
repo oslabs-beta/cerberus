@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { login } from '../services/passkeyService.ts'; // API call
 import { validateEmail } from '../utils/validation.ts'; // email validation
 import { UseLoginWithPasskeyProps } from './types';
-// import { LoginResponse, UseLoginWithPasskeyProps } from './types';
 
 interface UsePasskeyFormReturn {
   email: string;
@@ -18,8 +17,6 @@ export const usePasskeyLogin = (
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // const navigate = useNavigate();
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -44,12 +41,6 @@ export const usePasskeyLogin = (
         token: loginResult.token,
         user: loginResult.user,
       });
-
-      // const success = await login(email);
-      // if (success) {
-      //   navigate('/Dashboard');
-      //   console.log('Logged in successfully!');
-      // }
     } catch (error) {
       setError('Failed to log in. Please try again.');
       console.error(error);

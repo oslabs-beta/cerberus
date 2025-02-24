@@ -1,5 +1,3 @@
-// setup to later be able to create custom errors to help us find bugs quicker
-
 export class CustomError extends Error {
   status?: number;
 
