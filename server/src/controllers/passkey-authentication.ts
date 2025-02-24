@@ -1,9 +1,13 @@
-// check if passkeys are already stored on the device (allowing multiple passkeys per account could lead to major user confusion)
-// Allow users to add only 1 passkey per device?
 import type { Request, Response, NextFunction } from 'express';
 import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
+} from '@simplewebauthn/server';
+import { isoBase64URL } from '@simplewebauthn/server/helpers';
+import type {
+  VerifiedAuthenticationResponse,
+  VerifyAuthenticationResponseOpts,
+  AuthenticatorTransportFuture,
 } from '@simplewebauthn/server';
 import { base64ToUint8Array } from '../utils/passkeys-utils';
 import { rpID, origin } from '../utils/passkeys-constants';
@@ -12,42 +16,67 @@ import {
   type DBAuthenticatorDevice,
 } from '../models/passkeys-credential-service';
 import { userService } from '../models/passkeys-user-service';
-import { isoBase64URL } from '@simplewebauthn/server/helpers';
-import type {
-  VerifiedAuthenticationResponse,
-  VerifyAuthenticationResponseOpts,
-  AuthenticatorTransportFuture,
-} from '@simplewebauthn/server';
 import { CustomError } from '../middlewares/customError';
 
+// this starts login with passkey authentication
 export const handleLoginStart = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const { email } = req.body;
+
   try {
     const user = await userService.getUserByEmail(email);
+
     if (!user) {
       // offer user to create a new account here
       return next(new CustomError('User not found', 404));
     }
 
-    req.session.loggedInUserId = user.id;
+    // Get user's credentials (especially credential_id and public_key)
+    // from database
+    const userCredentials = await credentialService.getCredentialsByUserId(
+      user.id
+    );
 
-    // [allowCredentials](/glossary/allowcredentials) is purposely for this demo left empty. This causes all existing local credentials
-    // to be displayed for the service instead only the ones the username has registered.
+    // Format credentials for WebAuthn - this variable will tell browser which credentials are
+    // allowed for authentication
+    const allowCredentials = userCredentials.map((cred) => {
+      // First decode from base64 to buffer
+      const credentialBuffer = Buffer.from(cred.credentialID, 'base64');
+      // Then encode to base64url
+      const credentialId = isoBase64URL.fromBuffer(credentialBuffer);
+
+      return {
+        id: credentialId,
+        type: 'public-key' as const,
+        transports: cred.transports as AuthenticatorTransportFuture[], // e.g. ['usb,'nfc,'ble', etc]
+      };
+    });
+
+    // this generates authentication options that will be sent to the clien (browser) to initiate
+    // the WebAuthn authentication process
     const options = await generateAuthenticationOptions({
       timeout: 60000,
-      allowCredentials: [],
-      userVerification: 'required',
+      allowCredentials,
+      userVerification: 'preferred',
       rpID,
     });
 
+    // stores the user's ID in the session for later use (e.g. to associate the authentication response
+    // with the correct user)
+    req.session.loggedInUserId = user.id;
+    // grab the challenge from options and store it in req.session
     req.session.currentChallenge = options.challenge;
+    req.session.authMethod = 'passkey';
+
+    // send options to client
     res.locals.options = options;
     next();
   } catch (error) {
+    console.error('Login start detailed error:', error);
+
     next(
       error instanceof CustomError
         ? error
@@ -74,7 +103,6 @@ export const handleLoginFinish = async (
 
   try {
     const credentialID = isoBase64URL.toBase64(body.rawId);
-    // const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
     const dbCredential: DBAuthenticatorDevice | null =
       await credentialService.getCredentialByCredentialId(credentialID);
     if (!dbCredential) {
@@ -92,7 +120,6 @@ export const handleLoginFinish = async (
     const credentialPublicKeyBuffer = base64ToUint8Array(
       dbCredential.credentialPublicKey
     );
-    // const credentialIDBuffer = base64ToUint8Array(dbCredential.credentialID);
 
     const validTransports = dbCredential.transports.filter(
       (transport): transport is AuthenticatorTransportFuture =>
@@ -112,8 +139,10 @@ export const handleLoginFinish = async (
         transports: validTransports,
       },
     };
+
     const verification: VerifiedAuthenticationResponse =
       await verifyAuthenticationResponse(opts);
+
     const { verified, authenticationInfo } = verification;
 
     if (verified) {
@@ -121,19 +150,24 @@ export const handleLoginFinish = async (
         credentialID, // or bodyCredIDBuffer re-encoded, as you prefer
         authenticationInfo.newCounter
       );
+
+      // Update session for authenticated state
+      req.session.currentChallenge = undefined; // Clear only the challenge
+      req.session.isAuthenticated = true; // Add authentication status
+      req.session.lastActivity = new Date(); // Add last activity timestamp
+
       res.locals.verified = true;
       next();
     } else {
       next(new CustomError('Verification failed', 400));
     }
   } catch (error) {
+    console.error('Login finish detailed error:', error);
+
     next(
       error instanceof CustomError
         ? error
         : new CustomError('Internal Server Error', 500)
     );
-  } finally {
-    req.session.currentChallenge = undefined;
-    req.session.loggedInUserId = undefined;
   }
 };

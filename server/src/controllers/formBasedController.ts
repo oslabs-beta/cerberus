@@ -1,21 +1,11 @@
-// import userModel from '@/models/db';
+// Handles password-based authentication
+
 import userModel from '../models/db';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-// import crypto from 'crypto';
-// import nodemailer from 'nodemailer';
-// import type { JwtPayload } from 'jsonwebtoken';
-import type {
-  Request,
-  Response,
-  NextFunction,
-  // ErrorRequestHandler,
-} from 'express';
-
-// interface DecodedToken extends JwtPayload {
-//   userId: number;
-//   email?: string;
-// }
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import type { Request, Response, NextFunction } from 'express';
+import { tokenService } from '../services/tokenService';
 
 interface FormBasedController {
   validateRegistration: (
@@ -55,43 +45,55 @@ interface FormBasedController {
     next: NextFunction
   ) => Promise<void>;
   verifyToken: (req: Request, res: Response, next: NextFunction) => void;
-  // sendEmailPassReset: (
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction
-  // ) => Promise<void>;
+  validateEmail: (req: Request, res: Response, next: NextFunction) => void;
+  sendPasswordResetEmail: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  validateResetToken: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  resetPassword: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  validateRefreshToken: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  issueNewTokens: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
 }
 
 const formBasedController: FormBasedController = {
-  validateRegistration: (req, res, next) => {},
-  checkExistingUser: async (req, res, next) => {},
-  hashPassword: async (req, res, next) => {},
-  createUser: async (req, res, next) => {},
-  createMongoUser: async (req, res, next) => {},
-  rollbackSupabaseUser: async (req, res, next) => {},
-  validateLoginData: (req, res, next) => {},
-  authenticateUser: async (req, res, next) => {},
-  verifyToken: (req, res, next) => {},
-  // sendEmailPassReset: (req, res, next) => {},
+  validateRegistration: (_req, _res, _next) => {},
+  checkExistingUser: async (_req, _res, _next) => {},
+  hashPassword: async (_req, _res, _next) => {},
+  createUser: async (_req, _res, _next) => {},
+  createMongoUser: async (_req, _res, _next) => {},
+  rollbackSupabaseUser: async (_req, _res, _next) => {},
+  validateLoginData: (_req, _res, _next) => {},
+  authenticateUser: async (_req, _res, _next) => {},
+  verifyToken: (_req, _res, _next) => {},
+  validateEmail: (_req, _res, _next) => {},
+  sendPasswordResetEmail: async (_req, _res, _next) => {},
+  validateResetToken: async (_req, _res, _next) => {},
+  resetPassword: async (_req, _res, _next) => {},
+  validateRefreshToken: async (_req, _res, _next) => {},
+  issueNewTokens: async (_req, _res, _next) => {},
 };
-
-// Here we have our collection of middleware functions, typically grouped around a specific topic
 
 // validating incoming user data
 formBasedController.validateRegistration = (req, _res, next) => {
-  // include below fname if fname is an option
   const { email, password } = req.body;
-
-  // Server-side validation (always validate on server even if client validates)
-  // if (!fname || fname.length > 50) {
-  //   return next({
-  //     log: 'Invalid first name',
-  //     status: 400,
-  //     message: {
-  //       error: 'First name is required and must be less than 50 characters',
-  //     },
-  //   });
-  // }
 
   if (
     !email ||
@@ -113,7 +115,8 @@ formBasedController.validateRegistration = (req, _res, next) => {
     });
   }
 
-  // Check for at least one uppercase letter, one number, and one special character
+  // Check that password contains at least one uppercase letter,
+  // one number, and one special character
   const passwordRegex =
     /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_+=[\]{};:'"\\|,.<>/?])[A-Za-z\d!@#$%^&*()\-_+=[\]{};:'"\\|,.<>/?]{8,72}$/;
   if (!passwordRegex.test(password)) {
@@ -131,19 +134,25 @@ formBasedController.validateRegistration = (req, _res, next) => {
 };
 
 // Check if user already exists
-formBasedController.checkExistingUser = async (req, _res, next) => {
+formBasedController.checkExistingUser = async (req, res, next) => {
   const { email } = req.body;
 
   try {
     const existingUser = await userModel.getUserByEmail(email);
 
-    if (existingUser) {
-      // need to check whether this is the appropriate response, currently this is sending the 409 message back to client, which may NOT be a best practice (bad actors thus could find out registered users)
+    // User exists and already has a password
+    if (existingUser && existingUser.password_hash) {
       return next({
         log: 'User already exists',
         status: 409,
         message: { error: 'Email already registered' },
       });
+    }
+
+    // Case when the user already exists because he registered via passkey
+    // (but doesn't yet have a stored hashed password)
+    if (existingUser) {
+      res.locals.existingUser = existingUser;
     }
     next();
   } catch (error) {
@@ -177,14 +186,21 @@ formBasedController.createUser = async (req, res, next) => {
   const hashedPassword = res.locals.hashedPassword;
 
   try {
-    const user = await userModel.createUser(email, hashedPassword, fname);
+    let user;
 
-    // Store user data (except password) in res.locals (Is this really necessary?
-    // We probably don't want to send this info back to frontend, right? CHECK)
+    if (res.locals.existingUser) {
+      // Update existing passkey-only user with password
+      user = await userModel.updateUserPassword(
+        res.locals.existingUser.id,
+        hashedPassword
+      );
+    } else {
+      // create new user
+      user = await userModel.createUser(email, hashedPassword, fname);
+    }
+
     res.locals.user = {
-      id: user.id,
       email: user.email,
-      created_at: user.created_at,
     };
     next();
   } catch (error) {
@@ -240,7 +256,6 @@ formBasedController.authenticateUser = async (req, res, next) => {
 
     if (!isValidPassword) {
       return next({
-        // is this valid response? CHECK!
         log: 'Invalid password',
         status: 401,
         message: { error: 'Invalid email or password' },
@@ -248,64 +263,58 @@ formBasedController.authenticateUser = async (req, res, next) => {
     }
 
     // Record the login
-    // To get the user's IP address, it seems like either req.socket.remoteAddress or req.ip works
+    // To get the user's IP address, either req.socket.remoteAddress or req.ip works
     // another option: req.headers['x-forwarded-for']
     // might need to paste (app.set('trust proxy', true);) into server.ts to trust
     const ipAddress = req.ip || 'unknown';
     await userModel.recordLogin(user.id, ipAddress, true);
 
-    // Generate JWT token
-    // const jwtSecret = process.env.JWT_SECRET;
-    const jwtSecret = process.env.JWT_SECRET as jwt.Secret;
-    if (!jwtSecret) {
-      return next({
-        log: 'JWT secret is not defined',
-        status: 500,
-        message: { error: 'Internal server error' },
-      });
-    }
-
-    // This creates a token with a HEADER (algorithm & token type), PAYLOAD (user data), and SIGNATURE
-    // SIGNATURE is a one-way hash of the HEADER + PAYLOAD + JWT Secret stored on the server
-    const tokenExpiry = process.env.JWT_EXP || '24h';
-    const token = jwt.sign(
-      { userId: user.id, email: user.email }, // Payload
-      jwtSecret, // Secret key
-      { expiresIn: tokenExpiry } as jwt.SignOptions // Options
-    );
-
-    // The point of 'decoding' the jwt token here is just to extract
-    // its expiration to send it to the frontend
-    const decoded = jwt.decode(token) as jwt.JwtPayload;
-
-    // The 'exp' is in *seconds* since the Unix epoch (not ms)
-    // so to transform it into JS-friendly timestamp in ms: decoded.exp * 1000
-    // const expiresAt = (decoded?.exp ?? 0) * 1000;
-    const expiresAt = (decoded?.exp ?? 24 * 60 * 60) * 1000;
-
-    // Convert "24h" to milliseconds if we want to set cookie maxAge in Ms
-
-    const cookieMaxAgeMs =
-      Number(process.env.COOKIE_AGE) || 24 * 60 * 60 * 1000; // 24 hours in ms
-
-    // set cookie on res object (place the token in it) to send it back to client
-    res.cookie('token', token, {
-      httpOnly: true, // prevents client-side scripts from accessing this cookie (security against XSS)
-      secure: process.env.NODE_ENV === 'production', // this ensures cross-site cookies are only accessible over HTTPS connections
-      sameSite: 'strict', // check to see if we need this
-      maxAge: cookieMaxAgeMs, // cookie's expiration
-      // path: '/',                                   // default is '/', can be set as needed
+    // Generate JWT token using service
+    // const { token, expiresAt } = tokenService.generateAuthToken({
+    //   userId: user.id,
+    //   email: user.email,
+    // });
+    const tokens = tokenService.generateTokens({
+      userId: user.id,
+      email: user.email,
     });
 
-    // Remove sensitive data before sending
-    const safeUser = {
-      id: user.id,
+    // Store refresh token
+    await tokenService.storeRefreshToken(user.id, tokens.refreshToken);
+
+    // set cookie
+    // res.cookie('token', token, {
+    //   httpOnly: true, // prevents client-side scripts from accessing this cookie (security against XSS)
+    //   secure: process.env.NODE_ENV === 'production', // this ensures cross-site cookies are only accessible over HTTPS connections
+    //   sameSite: 'strict', // check to see if we need this
+    //   maxAge: Number(process.env.COOKIE_AGE) || 24 * 60 * 60 * 1000, // cookie's expiration
+    // });
+
+    res.cookie('accessToken', tokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Add session ID to response for frontend tracking
+    const sessionId = crypto.randomBytes(16).toString('hex');
+    res.locals.sessionId = sessionId;
+
+    // set response data
+    res.locals.user = {
       email: user.email,
       created_at: user.created_at,
     };
 
-    res.locals.user = safeUser;
-    res.locals.expiresAt = expiresAt; // numeric seconds since epoch
+    res.locals.expiresAt = tokens.accessTokenExpiresAt;
 
     next();
   } catch (error) {
@@ -321,87 +330,210 @@ formBasedController.authenticateUser = async (req, res, next) => {
   }
 };
 
-// Verify JWT token middleware
-// formBasedController.verifyToken = (req, res, next) => {
-//   const token = req.headers.authorization?.split(' ')[1]; // Bearer TOKEN
+// Validate email middleware
+formBasedController.validateEmail = (req, _res, next) => {
+  const { email } = req.body;
 
-//   if (!token) {
-//     return next({
-//       log: 'No token provided',
-//       status: 401,
-//       message: { error: 'Authentication required' },
-//     });
-//   }
+  if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    return next({
+      log: 'Invalid email format',
+      status: 400,
+      message: { error: 'Valid email is required' },
+    });
+  }
 
-//   try {
-//     const jwtSecret = process.env.JWT_SECRET;
-//     if (!jwtSecret) {
-//       return next({
-//         log: 'JWT secret is not defined',
-//         status: 500,
-//         message: { error: 'Internal server error' },
-//       });
-//     }
-//     const decoded = jwt.verify(token, jwtSecret) as DecodedToken;
-//     // const decoded = jwt.verify(token, jwtSecret);
-//     res.locals.userId = decoded.userId;
-//     next();
-//   } catch (error) {
-//     return next({
-//       log: 'Invalid token: ' + error,
-//       status: 401,
-//       message: { error: 'Invalid or expired token' },
-//     });
-//   }
-// };
+  next();
+};
 
-// formBasedController.sendEmailPassReset = async (req, res, next) => {
-//   const { email } = req.body;
+// Password-reset email middleware
+formBasedController.sendPasswordResetEmail = async (req, _res, next) => {
+  const { email } = req.body;
 
-//   try {
-//     const user = await userModel.getUserByEmail(email);
+  try {
+    // Check if user exists
+    const user = await userModel.getUserByEmail(email);
 
-//     if (!user) {
-//       // Still return 200 for security
-//       return res.status(200).json({
-//         message: "If an account exists with this email, a password reset link will be sent."
-//       });
-//     }
-//     const resetToken = crypto.randomBytes(32).toString('hex');
-//     const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+    if (!user) {
+      // Don't reveal whether user exists, just end successfully
+      return next();
+    }
 
-//     await userModel.storeResetToken(user.id, resetToken, resetTokenExpiry);
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
 
-//     const transporter = nodemailer.createTransport({
-//       service: 'gmail',
-//       auth: {
-//         user: process.env.EMAIL_USER,
-//         pass: process.env.EMAIL_PASS
-//       }
-//     });
+    // Save token in database
+    await userModel.saveResetToken(user.id, resetToken, resetTokenExpiry);
 
-//     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    // Create email transport - configured for MailHog
+    const transporter = nodemailer.createTransport({
+      service: 'localhost',
+      port: 1025, // MailHog SMTP port
+      secure: false,
+      ignoreTLS: true, // since we're running locally
+      // auth: {
+      //   user: process.env.EMAIL_USER,
+      //   pass: process.env.EMAIL_APP_PASSWORD, // will need to fill this out during production
+      // },
+    });
 
-//     await transporter.sendMail({
-//       to: email,
-//       subject: 'Password Reset Request',
-//       html: `
-//         <p>You requested a password reset.</p>
-//         <p>Click <a href="${resetUrl}">here</a> to reset your password.</p>
-//         <p>This link expires in 1 hour.</p>
-//       `
-//     });
+    // Create reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-//     res.status(200).json({
-//       message: "If an account exists with this email, a password reset link will be sent."
-//     });
-//   } catch (error) {
-//     next({
-//       log: `Error in password reset: ${error}`,
-//       status: 500,
-//       message: { error: 'Failed to process password reset request' }
-//     });
-//   }
-// };
+    // Send email
+    await transporter.sendMail({
+      // from: process.env.EMAIL_USER,
+      from: 'development@localhost',
+      to: email,
+      subject: 'Password Reset Request',
+      html: `
+        <h1>Password Reset Request</h1>
+        <p>You requested to reset your password. Click the link below to reset it:</p>
+        <a href="${resetUrl}">Reset Password</a>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `,
+    });
+
+    next();
+  } catch (error) {
+    return next({
+      log: 'Error in sendPasswordResetEmail: ' + error,
+      status: 500,
+      message: { error: 'Failed to process password reset request' },
+    });
+  }
+};
+
+// Validate reset token middleware
+formBasedController.validateResetToken = async (req, res, next) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return next({
+      log: 'Missing token or new password',
+      status: 400,
+      message: { error: 'Token and new password are required' },
+    });
+  }
+
+  try {
+    const resetRequest = await userModel.getResetToken(token);
+
+    if (
+      !resetRequest ||
+      !resetRequest.is_valid ||
+      new Date() > resetRequest.expires_at
+    ) {
+      return next({
+        log: 'Invalid or expired reset token',
+        status: 400,
+        message: { error: 'Invalid or expired reset token' },
+      });
+    }
+
+    res.locals.userId = resetRequest.user_id;
+    next();
+  } catch (error) {
+    return next({
+      log: 'Error validating reset token: ' + error,
+      status: 500,
+      message: { error: 'Failed to validate reset token' },
+    });
+  }
+};
+
+// Reset password middleware
+formBasedController.resetPassword = async (_req, res, next) => {
+  const userId = res.locals.userId;
+  const hashedPassword = res.locals.hashedPassword;
+
+  try {
+    await userModel.updatePassword(userId, hashedPassword);
+    await userModel.invalidateResetToken(userId);
+    next();
+  } catch (error) {
+    return next({
+      log: 'Error resetting password: ' + error,
+      status: 500,
+      message: { error: 'Failed to reset password' },
+    });
+  }
+};
+
+// Validate refresh token from cookie
+formBasedController.validateRefreshToken = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return next({
+        log: 'No refresh token provided',
+        status: 401,
+        message: { error: 'Authentication required' },
+      });
+    }
+
+    // Verify token and check if it exists in database
+    const payload = await tokenService.verifyRefreshToken(refreshToken);
+
+    if (!payload) {
+      // Clear both cookies if refresh token is invalid
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
+
+      return next({
+        log: 'Invalid refresh token',
+        status: 401,
+        message: { error: 'Please login again' },
+      });
+    }
+
+    // Store payload for next middleware
+    res.locals.tokenPayload = payload;
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Issue new access and refresh tokens
+formBasedController.issueNewTokens = async (req, res, next) => {
+  try {
+    const { userId, email } = res.locals.tokenPayload;
+
+    // Generate new tokens
+    const tokens = tokenService.generateTokens({ userId, email });
+
+    // Store new refresh token
+    await tokenService.storeRefreshToken(userId, tokens.refreshToken);
+
+    // Revoke old refresh token
+    await tokenService.revokeRefreshToken(req.cookies.refreshToken);
+
+    // Set new cookies
+    res.cookie('accessToken', tokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Send response
+    res.json({
+      success: true,
+      expiresAt: tokens.accessTokenExpiresAt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export default formBasedController;

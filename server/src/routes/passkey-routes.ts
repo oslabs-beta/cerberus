@@ -1,10 +1,5 @@
 import express, { Router } from 'express';
-import type {
-  Request,
-  Response,
-  // NextFunction,
-  // ErrorRequestHandler,
-} from 'express';
+import type { Request, Response } from 'express';
 import {
   handleRegisterFinish,
   handleRegisterStart,
@@ -21,11 +16,7 @@ router.post(
   '/register-start',
   handleRegisterStart,
   (_req: Request, res: Response) => {
-    res.status(201).json({
-      success: true,
-      message: 'Challenge successfully created',
-      user: res.locals.options,
-    });
+    res.status(201).json(res.locals.options);
   }
 );
 
@@ -46,11 +37,7 @@ router.post(
   '/login-start',
   handleLoginStart,
   (_req: Request, res: Response) => {
-    res.status(201).json({
-      success: true,
-      message: 'Challenge successfully created',
-      user: res.locals.options,
-    });
+    res.status(201).json(res.locals.options);
   }
 );
 
@@ -62,6 +49,8 @@ router.post(
     res.status(200).json({
       message: 'Successful verification',
       verification: res.locals.verified,
+      user: res.locals.user,
+      token: res.locals.token,
     });
   }
 );

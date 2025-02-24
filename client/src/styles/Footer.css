@@ -1,0 +1,66 @@
+/* styles/Footer.css */
+.landing-footer {
+  background-color: var(--neutral-200);
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-around;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-section h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--primary-dark);
+}
+
+.footer-section a {
+  color: var(--neutral-600);
+  text-decoration: none;
+}
+
+.footer-section a:hover {
+  color: var(--primary-main);
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--neutral-300);
+  color: var(--neutral-600);
+}
+
+:root[data-theme='dark'] .landing-footer {
+  background-color: var(--neutral-900);
+  color: var(--neutral-200);
+}
+
+:root[data-theme='dark'] .footer-section h4 {
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .footer-section a {
+  color: var(--neutral-400);
+}
+
+:root[data-theme='dark'] .footer-section a:hover {
+  color: var(--primary-light);
+}
+
+:root[data-theme='dark'] .footer-bottom {
+  border-top: 1px solid var(--neutral-600);
+  color: var(--neutral-400);
+}

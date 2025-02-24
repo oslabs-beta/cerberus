@@ -1,4 +1,5 @@
-// db.ts - This is your model layer
+// PostgreSQL queries used during password-based authentication
+
 import { query } from '../config/database';
 import type { QueryResult } from 'pg';
 
@@ -29,11 +30,6 @@ export const userModel = {
     isActive: boolean = true,
     emailVerified: boolean = false
   ): Promise<User> {
-    /**
-     * We’ll build arrays of columns, placeholders, and values
-     * in one pass. Then we handle `created_at` as CURRENT_TIMESTAMP
-     * without needing a placeholder for it.
-     */
     const columns: string[] = [
       'email',
       'password_hash',
@@ -55,10 +51,8 @@ export const userModel = {
       values.push(firstName);
     }
 
-    // We always set created_at to CURRENT_TIMESTAMP
     columns.push('created_at');
     placeholders.push('CURRENT_TIMESTAMP');
-    // No value needed for created_at
 
     const text = `
         INSERT INTO users (${columns.join(', ')})
@@ -69,9 +63,14 @@ export const userModel = {
     try {
       const res: QueryResult<User> = await query(text, values);
       return res.rows[0];
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 23505 is the 'unique_violation' error in Postgres
-      if (error.code === '23505') {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === '23505'
+      ) {
         throw new Error('Email already exists');
       }
       console.error('Database error in createUser:', error);
@@ -90,6 +89,7 @@ export const userModel = {
 
     try {
       const res: QueryResult<User> = await query(text, values);
+
       return res.rows[0] || null;
     } catch (error) {
       // Log the error for debugging but throw a generic error for security
@@ -146,15 +146,97 @@ export const userModel = {
     }
   },
 
-  // JUST ADDED
-  // storeResetToken: async (userId: number, token: string, expiry: Date) => {
-  //   const query = `
-  //     UPDATE users
-  //     SET reset_token = $1, reset_token_expiry = $2
-  //     WHERE id = $3
-  //   `;
-  //   await pool.query(query, [token, expiry, userId]);
-  // },
+  async updateUserPassword(
+    userId: number,
+    passwordHash: string
+  ): Promise<User> {
+    const text = `
+      UPDATE users 
+      SET password_hash = $1,
+          last_updated = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id, email, created_at
+    `;
+    const values = [passwordHash, userId];
+
+    try {
+      const res: QueryResult<User> = await query(text, values);
+      return res.rows[0];
+    } catch (error) {
+      console.error('Database error in updateUserPassword:', error);
+      throw new Error('Error updating user password');
+    }
+  },
+
+  // token for password reset
+  async saveResetToken(
+    userId: number,
+    token: string,
+    expiryDate: Date
+  ): Promise<void> {
+    const text = `
+      INSERT INTO password_reset_tokens (user_id, token, expires_at)
+      VALUES ($1, $2, $3)
+    `;
+    const values = [userId, token, expiryDate];
+
+    try {
+      await query(text, values);
+    } catch (error) {
+      console.error('Database error in saveResetToken:', error);
+      throw new Error('Error saving reset token');
+    }
+  },
+  // token for password reset
+  async getResetToken(token: string) {
+    const text = `
+      SELECT user_id, expires_at, is_valid
+      FROM password_reset_tokens
+      WHERE token = $1 AND is_valid = true
+    `;
+    const values = [token];
+
+    try {
+      const result = await query(text, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Database error in getResetToken:', error);
+      throw new Error('Error fetching reset token');
+    }
+  },
+  // token for password reset
+  async invalidateResetToken(userId: number): Promise<void> {
+    const text = `
+      UPDATE password_reset_tokens
+      SET is_valid = false
+      WHERE user_id = $1
+    `;
+    const values = [userId];
+
+    try {
+      await query(text, values);
+    } catch (error) {
+      console.error('Database error in invalidateResetToken:', error);
+      throw new Error('Error invalidating reset token');
+    }
+  },
+
+  async updatePassword(userId: number, newPasswordHash: string): Promise<void> {
+    const text = `
+      UPDATE users
+      SET password_hash = $1,
+          last_updated = CURRENT_TIMESTAMP
+      WHERE id = $2
+    `;
+    const values = [newPasswordHash, userId];
+
+    try {
+      await query(text, values);
+    } catch (error) {
+      console.error('Database error in updatePassword:', error);
+      throw new Error('Error updating password');
+    }
+  },
 };
 
 export default userModel;
