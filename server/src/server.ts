@@ -122,7 +122,7 @@ app.use('/api/auth', authRouter);
 // Passkeys-based authentication routes
 app.use('/api/passkey', passkeyRouter);
 
-// Protected routes - all routes here require authentication
+// Protected routes for passkey authentication - all routes here require authentication
 app.use('/api/user', protectedRoutes);
 
 /************************************************************************************

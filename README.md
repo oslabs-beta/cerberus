@@ -2,13 +2,21 @@
 
 reference: https://github.com/CodesmithLLC/PRO-README?tab=readme-ov-file
 
+https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
+
+https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks
+
 ## About
+
+Cerberus is an authentication toolkit for developers to offer users to authenticate with either password or passkeys.
+
+(link to website)
 
 ## Product Description
 
 Cerberus is an open-source authentication toolkit that simplifies implementing secure user authentication in your web applications.
 
-With support for both traditional password-based authentication and modern passkeys, Cerberus provides a flexible and secure solution for your authentication needs.
+Developers often struggle to find a free and easy-to-use open source passkey authentication solution. This is our endeavor and, because we know many users don't know or understand passkeys yet, we included traditional password-based authentication within Cerberus.
 
 The toolkit consists of React components for the authentication forms (sign-up, login, password-recovery), a landing page, and the dashboard your users have access to once they’ve been authenticated.
 
@@ -17,6 +25,96 @@ Besides these frontend components and integrated functionality, you get all the 
 ## Get Started
 
 The easiest way to get started is by forking this repository and working from the existing codebase.
+
+See the Database Setup Instructions section below on specifics concerning the database as well as environment variables needed.
+
+### Installing and Running Redis
+
+Cerberus uses Redis to manage sessions when users authenticate via passkey.
+
+Here are the instructions to install and run Redis:
+
+For macOS Users
+
+1. Install Redis:
+
+- The easiest way to install Redis on macOS is using Homebrew. If you don't have Homebrew installed, follow the instructions at [brew.sh](https://brew.sh/).
+- Once Homebrew is installed, run the following command in your terminal:
+
+  `brew install redis`
+
+2. Start Redis:
+
+- To start the Redis server, run:
+
+  `brew services start redis`
+
+- Alternatively, you can run Redis manually with:
+
+  `redis-server`
+
+3. Verify Redis is Running:
+
+- Open a new terminal window and run:
+
+  `redis-cli ping`
+
+- If Redis is running, you should see `PONG` as the response.
+
+4. Stop Redis:
+
+- To stop the Redis server, run:
+
+  `brew services stop redis`
+
+For Windows Users
+
+1. Install Redis:
+
+- Redis is not natively supported on Windows, but you can use the Windows Subsystem for Linux (WSL) or download a precompiled version of Redis for Windows.
+- Option 1: Using WSL:
+
+  - Install WSL by following the official guide: [Install WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
+  - Once WSL is set up, install Redis using the package manager for your Linux distribution (e.g., `apt` for Ubuntu):
+
+  ````sudo apt updated
+  sudo apt install redis-server ```
+
+  ````
+
+- Option 2: Precompiled Redis for Windows:
+  - Download the latest release of Redis for Windows from [Microsoft Archive](https://github.com/microsoftarchive/redis/releases).
+  - Extract the ZIP file and navigate to the extracted folder.
+
+2. Start Redis:
+
+- If using WSL:
+
+  - Start the Redis server with:
+
+  `sudo service redis-server start`
+
+- If using the precompiled version:
+  - Open the extracted folder and run `redis-server.exe`.
+
+3. Verify Redis is Running:
+
+- Open a terminal (or WSL terminal) and run:
+
+  `redis-cli ping`
+
+- If Redis is running, you should see `PONG` as the response.
+
+4. Stop Redis:
+
+- If using WSL:
+
+  - Stop the Redis server with:
+
+    `sudo service redis-server stop`
+
+- If using the precompiled version:
+  - Close the `redis-server.exe` window or use `Ctrl + C` in the terminal.
 
 ## Session Management
 
@@ -40,14 +138,13 @@ Thus, a session lasts until:
 
 Here would be a typical session flow:
 
-```
-// When user logs in with passkey
+```javascript // When user logs in with passkey
 export const handleLoginFinish = async (req, res, next) => {
-try {
-// 1. Generate session ID (handled by express-session)
-// 2. Store data in Redis
-req.session.loggedInUserId = user.id;
-req.session.authMethod = 'passkey';
+  try {
+    // 1. Generate session ID (handled by express-session)
+    // 2. Store data in Redis
+    req.session.loggedInUserId = user.id;
+    req.session.authMethod = 'passkey';
 
     // Redis now has:
     // KEY: "cerberus:session:abc123"
@@ -67,18 +164,17 @@ req.session.authMethod = 'passkey';
     // - If valid, gets data from Redis using session ID
 
     next();
-
-} catch (error) {
-next(error);
-}
+  } catch (error) {
+    next(error);
+  }
 };
-```
 
 // To manually end session:
 req.session.destroy((err) => {
-if (err) console.error('Session destruction error:', err);
-res.clearCookie('sessionId'); // Clear browser cookie
+  if (err) console.error('Session destruction error:', err);
+  res.clearCookie('sessionId'); // Clear browser cookie
 });
+```
 
 The path '/api/user' has been set for protected routes, so future fetch requests should utilize that path so the requiredPasskeyAuth middleware is invoked to validate the cookie based on SESSION_SECRET.
 
@@ -100,27 +196,27 @@ Each token is stored in HTTP-only cookie.
 
 During normal operation, you ought to implement the below to the frontend of your code:
 
-```
+```javascript
 // Frontend API calls include credentials
 const response = await fetch('/api/some-endpoint', {
-credentials: 'include' // Sends cookies automatically
+  credentials: 'include', // Sends cookies automatically
 });
 ```
 
 When access token expires:
 
-```
+```javascript
 // Frontend detects 401 response
 api.interceptors.response.use(
-(response) => response,
-async (error) => {
-if (error.response?.status === 401) {
-try {
-// Try to get new tokens using refresh token
-await fetch('/api/auth/refresh-token', {
-method: 'POST',
-credentials: 'include'
-});
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      try {
+        // Try to get new tokens using refresh token
+        await fetch('/api/auth/refresh-token', {
+          method: 'POST',
+          credentials: 'include',
+        });
 
         // Retry original request
         return api(error.config);
@@ -130,8 +226,7 @@ credentials: 'include'
       }
     }
     return Promise.reject(error);
-
-}
+  }
 );
 ```
 
@@ -148,60 +243,147 @@ If a refresh token is invalid/expired:
 - clear cookies
 - forces user to login again
 
-## Database Setup
+## Database Setup Instructions
 
-1. Install and Start PostgreSQL
+### Prerequisites:
 
-- Ensure PostgreSQL is installed on your system. You can download it from the official PostgreSQL website.
-  or ` brew install postgresql@14` (on Mac)
-- ` brew services start postgresql@14`
+- PostgreSQL (version 12 or higher recommended)
+- Node.js (version 16 or higher)
+- npm (version 7 or higher)
 
-2. Create a Database
+### Setting up the database
 
-- Create a new database for the project:
+Using the Setup Script (Recommended)
+
+We provide a convenient setup script that handles database creation and schema initialization.
+
+For macOS/Linux:
+
+1. Make the script executable:
+
+   `chmod +x server/db/setup.sh`
+
+2. Run the script:
+
+   `./server/db/setup.sh`
+
+For Windows:
+
+1. Using Git Bash or WSL (recommended):
+
+   `bash server/db/setup.sh`
+
+2. Using Command Prompt (alternative method):
 
 ```
-createdb your_database_name
+cd server\db
+setup.sh
 ```
 
-3. Run the Schema Script
+Manual Setup
 
-- Run the auth.sql script to set up the necessary tables and relationships:
+For macOS/Linux:
+
+1. Install PostgreSQL if you haven't already:
 
 ```
-psql -d your_database_name -f server/src/migrations/auth.sql
+brew install postgresql@14
+brew services start postgresql@14
 ```
 
-4. Configure Database Connection
+2. Create a database:
 
-- Update your project's configuration file or environment variables with the database connection details:
+```
+psql postgres -c "CREATE DATABASE auth_db;"
+```
 
+3. Run the type definitions:
+
+```
+psql auth_db -f server/db/schema/types.sql
+```
+
+4. Run the schema script:
+
+```
+psql auth_db -f server/db/schema/auth.sql
+```
+
+For Windows:
+
+1. Install PostgreSQL from the official website
+2. Open Command Prompt as administrator and navigate to your PostgreSQL bin directory:
+
+```
+cd "C:\Program Files\PostgreSQL\14\bin"
+```
+
+3. Create a database:
+
+```
+psql -U postgres -c "CREATE DATABASE auth_db;"
+```
+
+4. Run the type definitions and schema script:
+
+```
+psql -U postgres -d auth_db -f "C:\path\to\your\project\server\db\schema\types.sql"
+psql -U postgres -d auth_db -f "C:\path\to\your\project\server\db\schema\auth.sql"
+```
+
+## Environment Configuration
+
+1. Create a `.env` file in the root directory with the following variables:
+
+```javascript
+# Database configuration
+DB_USER=postgres
+DB_PASSWORD=your_password
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_NAME=your_database_name
+DB_NAME=auth_db
+DB_SSL=false # for local development
 
-5. Start the Application
+# Authentication settings
+SESSION_SECRET=your_random_secure_secret
+COOKIE_AGE=86400000
+SALT_ROUNDS=10
+JWT_SECRET=your_random_JWT_secret
+REFRESH_TOKEN_SECRET=your_random_refresh_secret
+JWT_EXP='15m'
 
-- Once the database is set up and configured, you can start the application.
+# Server settings
+PORT=3000
+NODE_ENV=development
+REDIS_URL=redis://localhost:6379 # For development / For production: use a Redis service URL (like Redis Cloud, AWS ElastiCache, etc.)
 
-6. Optional: Automate Database Setup
+# MailHog
+MAIL_HOST=localhost
+MAIL_PORT=1025
 
-- If your project uses a migration tool (like sequelize-cli, Alembic, or Flyway), you can automate the database setup process by adding the auth.sql script as an initial migration.
+# Frontend - for Vite
+FRONTEND_URL=http://localhost:5173
+VITE_GITHUB_CLIENT_ID=
+VITE_PORT=5173
+```
 
-- For example, in a Node.js project using sequelize-cli, you can create a migration file and include the SQL commands from auth.sql.
+2. Replace `your_password` with your actual PostgreSQL password and `your_random_secure_secret` (and JWT and token refresh secrets) with a secure random string. For this you can run on the terminal: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
 
-7. Test the Setup
+### Starting the Application
 
-- After setting up the database, run your application and ensure it can connect to the database and perform necessary operations.
+1. Install dependencies:
+   `npm install`
+2. Start the development server:
+   `npm run dev`
+
+This should start both the client and server simultaneously using concurrently.
 
 ## Development Email Testing
 
 For email testing, the toolkit is set to use MailHog, thus you'll need to:
 `brew update && brew install mailhog` (on a Mac)
 
-\*MailHog doesn't actually send emails, it's just for testing purposes.
+MailHog doesn't actually send emails, it's just for testing purposes.
 For production you may consider using SendGrid, Mailgun, Amazon SES, Postmark, Twilio SendGrid - these services invest in infrastructure, anti-spam measures, customer support to handle large email volumes, provide analytics and tracking (e.g., open rates, delivery status), built-in security features (e.g., encryption, SPF/DKIM/DMARC support), and compliance with regulations (e.g., GDPR, CAN-SPAM).
 
 - Open-Source SMTP Servers: Postfix, Exim, Sendmail.
@@ -209,8 +391,8 @@ For production you may consider using SendGrid, Mailgun, Amazon SES, Postmark, T
 When testing email features (password reset, etc.):
 
 1. Start MailHog:
-   ```bash
-   mailhog
+   ```
+   bash mailhog
    ```
 2. Access the MailHog web interface at http://localhost:8025
 
@@ -220,13 +402,17 @@ When testing email features (password reset, etc.):
 
 ## Contributors
 
-- Fabiano Santin
-- Molly Josephson
-- Gabriel Davis
+- [Fabiano Santin](https://github.com/fsantin1985)
+- [Molly Josephson](https://github.com/mjosephson5)
+- [Gabriel Davis](https://github.com/duimaurisfootball)
 - Boyu Hu
 
 ## Feedback and Contributions
 
-## License
-
 ## Contacts
+
+## FAQ
+
+## Links
+
+- [Medium article]()
