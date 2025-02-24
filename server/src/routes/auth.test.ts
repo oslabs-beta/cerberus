@@ -34,6 +34,18 @@ vi.mock('../controllers/formBasedController', () => ({
     sendPasswordResetEmail: vi.fn((_req, _res, next) => next()),
     validateResetToken: vi.fn((_req, _res, next) => next()),
     resetPassword: vi.fn((_req, _res, next) => next()),
+    validateRefreshToken: vi.fn((_req, res, next) => {
+      res.locals.tokenPayload = {
+        userId: 1,
+        email: 'test@example.com',
+      };
+      next();
+    }),
+    issueNewTokens: vi.fn((_req, res, next) => {
+      res.locals.expiresAt = Date.now() + 900000; // 15 minutes
+      res.locals.success = true;
+      next();
+    }),
   },
 }));
 
@@ -163,6 +175,37 @@ describe('Authentication Routes', () => {
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Invalid login data');
       expect(formBasedController.authenticateUser).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /refresh-token', () => {
+    it('should issue new tokens with valid refresh token', async () => {
+      const response = await request
+        .post('/api/auth/refresh-token')
+        .set('Cookie', ['refreshToken=valid_refresh_token']);
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.expiresAt).toBeDefined();
+      expect(formBasedController.validateRefreshToken).toHaveBeenCalled();
+      expect(formBasedController.issueNewTokens).toHaveBeenCalled();
+    });
+
+    it('should handle invalid refresh token', async () => {
+      // Mock validation failure
+      vi.mocked(
+        formBasedController.validateRefreshToken
+      ).mockImplementationOnce(async (_req, res, _next) => {
+        res.status(401).json({ error: 'Please login again' });
+      });
+
+      const response = await request
+        .post('/api/auth/refresh-token')
+        .set('Cookie', ['refreshToken=invalid_refresh_token']);
+
+      expect(response.status).toBe(401);
+      expect(response.body.error).toBe('Please login again');
+      expect(formBasedController.issueNewTokens).not.toHaveBeenCalled();
     });
   });
 });
