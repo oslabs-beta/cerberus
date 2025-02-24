@@ -25,6 +25,7 @@ services:
       - '3000:3000' # Keep original backend port
     depends_on:
       - db
+      - redis
     environment:
       - NODE_ENV=development
       - DB_HOST=db
@@ -32,6 +33,8 @@ services:
       - DB_NAME=cerberus_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     volumes:
       - ./server:/usr/src/app
       - /usr/src/app/node_modules
@@ -47,6 +50,15 @@ services:
       - POSTGRES_DB=cerberus_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
 
 volumes:
   postgres_data:
+  redis_data:
