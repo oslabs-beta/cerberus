@@ -310,6 +310,7 @@ formBasedController.authenticateUser = async (req, res, next) => {
 
     // set response data
     res.locals.user = {
+      id: user.id,
       email: user.email,
       created_at: user.created_at,
     };

@@ -156,7 +156,14 @@ export const handleLoginFinish = async (
       req.session.isAuthenticated = true; // Add authentication status
       req.session.lastActivity = new Date(); // Add last activity timestamp
 
+      const user = await userService.getUserById(dbCredential.userID);
+
       res.locals.verified = true;
+      res.locals.user = {
+        id: user.id.toString(),
+        email: user.email,
+        created_at: user.created_at,
+      };
       next();
     } else {
       next(new CustomError('Verification failed', 400));

@@ -78,35 +78,62 @@ const login = async (email: string): Promise<LoginResponse> => {
     // Convert the login options to JSON.
     const options = await response.json();
 
-    // This triggers the browser to display the passkey / WebAuthn modal (e.g. Face ID, Touch ID, Windows Hello).
-    // A new assertionResponse is created. This also means that the challenge has been signed.
-    const assertionResponse = await startAuthentication(options);
+    try {
+      // This triggers the browser to display the passkey / WebAuthn modal (e.g. Face ID, Touch ID, Windows Hello).
+      // A new assertionResponse is created. This also means that the challenge has been signed.
+      const assertionResponse = await startAuthentication(options);
 
-    // Send assertionResponse back to server for verification.
-    const verificationResponse = await fetch('/api/passkey/login-finish', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(assertionResponse),
-      credentials: 'include',
-    });
+      // Send assertionResponse back to server for verification.
+      const verificationResponse = await fetch('/api/passkey/login-finish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(assertionResponse),
+        credentials: 'include',
+      });
 
-    if (!verificationResponse.ok) {
-      const errorText = await verificationResponse.text();
-      throw new Error(`Login verification failed: ${errorText}`);
+      if (!verificationResponse.ok) {
+        const errorText = await verificationResponse.text();
+        throw new Error(`Login verification failed: ${errorText}`);
+      }
+
+      // Parse the complete response
+      const loginData = await verificationResponse.json();
+      console.log('Full login response data:', loginData);
+
+      if (!loginData.verification) {
+        throw new Error('Login verification failed');
+      }
+
+      if (!loginData.user || !loginData.user.id) {
+        console.error(
+          'User data is missing or malformed in the response:',
+          loginData
+        );
+        // Create a fallback user with minimal data if needed
+        const fallbackUser = {
+          id: String(Date.now()), // temporary ID
+          email: email,
+        };
+
+        return {
+          verification: loginData.verification,
+          user: fallbackUser,
+        };
+      }
+      return {
+        verification: loginData.verification,
+        user: {
+          id: String(loginData.user.id),
+          email: loginData.user.email,
+        },
+      };
+    } catch (authError) {
+      // Handle WebAuthn-specific errors (like user cancellation)
+      console.error('Authentication error:', authError);
+      const errorMessage =
+        authError instanceof Error ? authError.message : 'Unknown error';
+      throw new Error(`Passkey login failed: ${errorMessage}`);
     }
-
-    // Parse the complete response
-    const loginData = await verificationResponse.json();
-
-    if (!loginData.verification) {
-      throw new Error('Login verification failed');
-    }
-
-    return {
-      verification: loginData.verification,
-      user: loginData.user,
-      token: loginData.token,
-    };
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Passkey login failed: ${error.message}`);
@@ -114,5 +141,4 @@ const login = async (email: string): Promise<LoginResponse> => {
     throw new Error('Passkey login failed: Unknown error');
   }
 };
-
 export { createPasskey, login };
