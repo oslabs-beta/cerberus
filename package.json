@@ -64,6 +64,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.1",
+    "@types/highlight.js": "^9.12.4",
     "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^22.13.1",
     "@types/nodemailer": "^6.4.17",
