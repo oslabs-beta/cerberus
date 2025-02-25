@@ -1,170 +1,28 @@
-/* App.css */
-
-/* CSS Reset and Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* App-wide Layout Styles */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-:root {
-  /* Primary Colors */
-  --primary-dark: #2c5530; /* Deep forest green */
-  --primary-main: #3e7b45; /* Medium sage */
-  --primary-light: #69a297; /* Light sage */
-
-  /* Secondary Colors */
-  --accent-main: #d4a373; /* Warm sand */
-  --accent-light: #e9c39b; /* Light sand */
-
-  /* Neutral Colors */
-  --neutral-100: #ffffff;
-  --neutral-200: #f5f5f0; /* Slightly warm white */
-  --neutral-300: #e5e5e0;
-  --neutral-600: #4d4d4d;
-  --neutral-800: #2d2d2d;
-
-  /* Feedback Colors */
-  --success: #3e7b45; /* Matching primary-main */
-  --error: #c25e5e; /* Muted red */
-  --warning: #d4a373; /* Matching accent-main */
-
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-
-  /* Font Sizes */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: var(--neutral-200);
-  color: var(--neutral-800);
-  line-height: 1.5;
-}
-
-/* Main Content Layout */
-.main-content {
-  padding-top: 4rem; /* Space for fixed navbar */
-  min-height: calc(100vh - 4rem);
+/* Common spacing utility classes */
+.container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 5rem var(--spacing-xl) var(--spacing-xl);
+  padding: 0 2rem;
 }
 
-/* Common Component Styles */
-.card {
-  background-color: var(--neutral-100);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
 }
 
-/* Form Styles */
-.form-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: var(--spacing-xl);
-}
-
-.form-group {
-  margin-bottom: var(--spacing-md);
-}
-
-.form-label {
-  display: block;
-  margin-bottom: var(--spacing-xs);
-  color: var(--neutral-800);
-  font-weight: 500;
-}
-
-.form-input {
-  width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--neutral-300);
-  border-radius: 4px;
-  font-size: var(--text-base);
-  transition: border-color 0.2s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--primary-light);
-  box-shadow: 0 0 0 2px rgba(74, 105, 187, 0.1);
-}
-
-/* Button Styles */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-.btn-primary {
-  background-color: var(--primary-main);
-  color: var(--neutral-100);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-dark);
-}
-
-.btn-secondary {
-  background-color: var(--neutral-200);
-  color: var(--neutral-800);
-}
-
-.btn-secondary:hover {
-  background-color: var(--neutral-300);
-}
-
-/* Authentication Pages */
-.auth-container {
-  max-width: 400px;
-  margin: 2rem auto;
-  padding: var(--spacing-xl);
-  background-color: var(--neutral-100);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.auth-title {
-  color: var(--primary-dark);
-  font-size: var(--text-2xl);
-  margin-bottom: var(--spacing-lg);
-  text-align: center;
-}
-
-/* Dashboard Layout */
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-lg);
-  padding: var(--spacing-xl);
-}
-
-/* Alert/Message Styles */
+/* Common Alert/Message Styles */
 .alert {
-  padding: var(--spacing-md);
+  padding: 1rem;
   border-radius: 4px;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 1rem;
 }
 
 .alert-success {
@@ -179,52 +37,24 @@ body {
   border: 1px solid var(--error);
 }
 
-/* Dark Mode Styles */
-.dark {
-  --neutral-100: #1a1a1a;
-  --neutral-200: #2d2d2d;
-  --neutral-300: #404040;
-  --neutral-600: #a3a3a3;
-  --neutral-800: #f3f4f6;
-
-  color-scheme: dark;
+/* Loading state */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--neutral-600);
 }
 
-/* Responsive Styles */
-@media (max-width: 768px) {
-  .main-content {
-    padding: 4rem var(--spacing-md) var(--spacing-md);
-  }
-
-  .dashboard {
-    grid-template-columns: 1fr;
-  }
-
-  .auth-container {
-    margin: 1rem;
-    padding: var(--spacing-lg);
-  }
-}
-
-/* Utility Classes */
-.text-center {
-  text-align: center;
-}
-.mt-1 {
-  margin-top: var(--spacing-xs);
-}
-.mt-2 {
-  margin-top: var(--spacing-sm);
-}
-.mt-4 {
-  margin-top: var(--spacing-md);
-}
-.mb-1 {
-  margin-bottom: var(--spacing-xs);
-}
-.mb-2 {
-  margin-bottom: var(--spacing-sm);
-}
-.mb-4 {
-  margin-bottom: var(--spacing-md);
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

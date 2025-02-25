@@ -14,12 +14,6 @@ export interface DBAuthenticatorDevice {
   friendlyName?: string;
 }
 
-interface DeviceInfo {
-  deviceName?: string;
-  deviceType?: string;
-  deviceIdentifier?: string;
-}
-
 export const credentialService = {
   async generateUniqueFriendlyName(
     userId: number,
@@ -54,21 +48,10 @@ export const credentialService = {
     publicKey: string,
     counter: number,
     transports: string[], // store as an actual array if using a TEXT[] column
-    attestationType: string = 'none',
-    deviceInfo?: DeviceInfo
-    // friendlyName?: string
+    attestationType: string = 'none'
   ): Promise<void> {
     try {
       await query('BEGIN');
-
-      console.log('Saving credential with values:', {
-        userId,
-        credentialId,
-        publicKey: publicKey.substring(0, 20) + '...', // Only log part of the key
-        counter,
-        transports,
-        attestationType,
-      });
 
       const credentialResult = await query(
         `INSERT INTO credentials 
@@ -133,7 +116,9 @@ export const credentialService = {
       if (row.transports) {
         // If it's a string (comma-separated), split it
         if (typeof row.transports === 'string') {
-          transports = row.transports.split(',').map((t) => t.trim());
+          transports = row.transports
+            .split(',')
+            .map((t: string): string => t.trim());
         }
         // If it's already an array, use it
         else if (Array.isArray(row.transports)) {
@@ -183,8 +168,6 @@ export const credentialService = {
         `SELECT * FROM credentials WHERE user_id = $1 AND deleted_at IS NULL`,
         [userId]
       );
-
-      console.log('Raw credentials from DB:', result.rows); // Add logging
 
       return result.rows.map((row) => ({
         userID: row.user_id,

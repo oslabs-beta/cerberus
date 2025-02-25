@@ -1,3 +1,5 @@
+// PostgreSQL queries used during password-based authentication
+
 import { query } from '../config/database';
 import type { QueryResult } from 'pg';
 
@@ -49,10 +51,8 @@ export const userModel = {
       values.push(firstName);
     }
 
-    // We always set created_at to CURRENT_TIMESTAMP
     columns.push('created_at');
     placeholders.push('CURRENT_TIMESTAMP');
-    // No value needed for created_at
 
     const text = `
         INSERT INTO users (${columns.join(', ')})
@@ -89,7 +89,7 @@ export const userModel = {
 
     try {
       const res: QueryResult<User> = await query(text, values);
-      // console.log(res.rows[0]);
+
       return res.rows[0] || null;
     } catch (error) {
       // Log the error for debugging but throw a generic error for security
@@ -168,6 +168,7 @@ export const userModel = {
     }
   },
 
+  // token for password reset
   async saveResetToken(
     userId: number,
     token: string,
@@ -186,7 +187,7 @@ export const userModel = {
       throw new Error('Error saving reset token');
     }
   },
-
+  // token for password reset
   async getResetToken(token: string) {
     const text = `
       SELECT user_id, expires_at, is_valid
@@ -203,7 +204,7 @@ export const userModel = {
       throw new Error('Error fetching reset token');
     }
   },
-
+  // token for password reset
   async invalidateResetToken(userId: number): Promise<void> {
     const text = `
       UPDATE password_reset_tokens

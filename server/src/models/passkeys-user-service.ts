@@ -1,6 +1,12 @@
 import { query } from '../config/database';
 import type { QueryResult } from 'pg';
-// import { v4 as uuidv4 } from 'uuid';
+
+interface LoginHistory {
+  id: number;
+  login_timestamp: Date;
+  ip_address: string;
+  success: boolean;
+}
 
 export const userService = {
   /**
@@ -45,5 +51,38 @@ export const userService = {
     const rows = result.rows;
     return rows[0];
     // return { email };
+  },
+
+  /**
+   * Get user's login history
+   */
+  async getLoginHistory(
+    userId: number,
+    limit: number = 10
+  ): Promise<LoginHistory[]> {
+    const result: QueryResult = await query(
+      `SELECT id, login_timestamp, ip_address, success
+       FROM login_history
+       WHERE user_id = $1
+       ORDER BY login_timestamp DESC
+       LIMIT $2`,
+      [userId, limit]
+    );
+    return result.rows;
+  },
+
+  /**
+   * Record a login attempt
+   */
+  async recordLogin(
+    userId: number,
+    ipAddress: string,
+    success: boolean = true
+  ): Promise<void> {
+    await query(
+      `INSERT INTO login_history (user_id, ip_address, success, login_timestamp)
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+      [userId, ipAddress, success]
+    );
   },
 };

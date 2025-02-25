@@ -4,12 +4,8 @@ export interface LoginResponse {
     id: string;
     email: string;
   };
-  token: string;
 }
 
 export interface UseLoginWithPasskeyProps {
-  onLogin: (data: {
-    token: string;
-    user: { id: string; email: string };
-  }) => void;
+  onLogin: (data: { user: { id: string; email: string } | null }) => void;
 }

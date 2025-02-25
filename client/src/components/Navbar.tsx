@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, Moon, Sun, Github } from 'lucide-react';
+import { scrollToSection } from '../utils/scrollUtils';
 import '../styles/navbar.css';
 
 export default function Navbar() {
@@ -7,7 +8,10 @@ export default function Navbar() {
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    document.documentElement.setAttribute(
+      'data-theme',
+      isDarkMode ? 'light' : 'dark'
+    );
   };
 
   return (
@@ -20,11 +24,19 @@ export default function Navbar() {
 
         {/* Center section - Navigation and Search */}
         <div className='nav-links'>
-          <a href='/getting-started' className='nav-item'>
-            Getting Started
+          <a
+            onClick={() => scrollToSection('about')}
+            className='nav-item'
+            style={{ cursor: 'pointer' }}
+          >
+            About
           </a>
-          <a href='/guides' className='nav-item'>
-            Guides
+          <a
+            onClick={() => scrollToSection('getting-started')}
+            style={{ cursor: 'pointer' }}
+            className='nav-item'
+          >
+            Getting Started
           </a>
         </div>
 

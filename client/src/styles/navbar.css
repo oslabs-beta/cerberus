@@ -100,13 +100,26 @@
 }
 
 /* Dark mode styles */
-/* .dark {
-  --neutral-100: #1a1a1a;
-  --neutral-200: #2d2d2d;
-  --neutral-300: #404040;
-  --neutral-600: #a3a3a3;
-  --neutral-800: #f3f4f6;
-} */
+:root[data-theme='dark'] .navbar {
+  background-color: var(--neutral-900);
+  border-bottom: 1px solid var(--neutral-600);
+}
+
+:root[data-theme='dark'] .nav-item {
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .nav-item:hover {
+  color: var(--primary-light);
+}
+
+:root[data-theme='dark'] .theme-toggle {
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .theme-toggle:hover {
+  color: var(--primary-main);
+}
 
 /* Responsive styles */
 @media (max-width: 768px) {

@@ -2,11 +2,22 @@ import express, { Router } from 'express';
 import type { Request, Response } from 'express';
 import formBasedController from '../controllers/formBasedController';
 import nodemailer from 'nodemailer';
+import rateLimit from 'express-rate-limit';
 
 const router: Router = express.Router();
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many login attempts, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Don't count successful logins against the limit
+});
+
 router.post(
   '/register',
+  loginLimiter,
   formBasedController.validateRegistration,
   formBasedController.checkExistingUser,
   formBasedController.hashPassword, // hash password before storing it in our database
@@ -15,7 +26,6 @@ router.post(
     res.status(201).json({
       success: true,
       message: 'Registration successful',
-      // do we really need to send user information back to frontend? CHECK
       user: res.locals.user,
     });
   }
@@ -30,7 +40,8 @@ router.post(
     res.status(200).json({
       message: 'Login successful',
       user: res.locals.user,
-      expiresAt: res.locals.expiresAt, // e.g. numeric timestamp  (implement this as well so React can store this?)
+      expiresAt: res.locals.expiresAt,
+      sessionId: res.locals.sessionId,
     });
   }
 );
@@ -87,5 +98,17 @@ router.post('/test-email', async (_req, res) => {
     });
   }
 });
+
+router.post(
+  '/refresh-token',
+  formBasedController.validateRefreshToken,
+  formBasedController.issueNewTokens,
+  (_req: Request, res: Response) => {
+    res.status(200).json({
+      success: true,
+      expiresAt: res.locals.expiresAt,
+    });
+  }
+);
 
 export default router;
