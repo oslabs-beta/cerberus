@@ -2,6 +2,7 @@
 import express from 'express';
 import { requirePasskeyAuth } from '../middlewares/requirePasskeyAuth';
 import { userService } from '../models/passkeys-user-service';
+import { redisClient } from '../server';
 
 const router = express.Router();
 
@@ -48,12 +49,16 @@ router.get('/me', requirePasskeyAuth, async (req, res, next) => {
 
 // Add this to protected-routes.ts
 router.post('/logout', requirePasskeyAuth, (req, res) => {
+  const sessionID = req.sessionID;
+
   // Clear session
   req.session.destroy((err) => {
     if (err) {
       console.error('Session destruction error:', err);
       return res.status(500).json({ message: 'Error during logout' });
     }
+
+    redisClient.del(`cerberus:${sessionID}`);
   });
 
   // Clear session cookie with matching options
