@@ -3,17 +3,23 @@ import { usePasskeyLogin } from '../hooks/useLoginWithPasskey.ts';
 // import createPasskey from '../services/passkeyService.ts';  // API request
 // import { validateEmail } from '../utils/validation.ts'; // email validation
 import '../styles/forms.css';
+import { useNavigate } from 'react-router-dom';
 
 interface PasskeyLoginProps {
-  onLogin: (userData: {
-    token: string;
-    user: { id: string; email: string } | null;
-  }) => void;
+  onLogin: (userData: { user: { id: string; email: string } | null }) => void;
 }
 
 const PasskeyLogin: React.FC<PasskeyLoginProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
+
+  const handleLoginSuccess = () => {
+    console.log('Navigation function called, redirecting to dashboard');
+    // Using replace: true ensures the login page is removed from history
+    navigate('/dashboard', { replace: true });
+  };
+
   const { email, error, isLoading, handleSubmit, handleEmailChange } =
-    usePasskeyLogin(onLogin);
+    usePasskeyLogin(onLogin, handleLoginSuccess);
 
   return (
     <div className='auth-form-container passkey-form'>

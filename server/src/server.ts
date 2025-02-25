@@ -16,9 +16,21 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import protectedRoutes from './routes/protected-routes';
 import { authMonitoring } from './middlewares/authMonitoring';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// CORS configuration
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === 'production'
+      ? process.env.FRONTEND_URL
+      : ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true, // Important for cookies
+  optionsSuccessStatus: 200,
+};
 
 // Load environment variables
 dotenv.config();
@@ -60,6 +72,8 @@ declare module 'express-session' {
   }
 }
 
+app.use(cors(corsOptions));
+
 // Trust the proxy (to correctly get user's IP address after deployed behind a proxy)
 // app.set('trust proxy', true);
 // app.set('trust proxy', '127.0.0.1');
@@ -88,6 +102,7 @@ app.use(globalLimiter);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // The following sets up a session-management cookie (connect.sid) with Redis store
 // It stores a session ID (connect.sid by default) that the server uses to
@@ -127,7 +142,7 @@ app.use('/api/oauth', oauthRouter)
 // Passkeys-based authentication routes
 app.use('/api/passkey', passkeyRouter);
 
-// Protected routes - all routes here require authentication
+// Protected routes for passkey authentication - all routes here require authentication
 app.use('/api/user', protectedRoutes);
 // chatgpt routes
 app.use('/api/chatbot', chatRoutes);

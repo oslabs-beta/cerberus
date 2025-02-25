@@ -4,10 +4,7 @@ import { useFormValidation } from '../hooks/formValidation';
 import '../styles/forms.css';
 
 interface LoginProps {
-  onLogin: (userData: {
-    token: string;
-    user: { id: string; email: string } | null;
-  }) => void;
+  onLogin: (userData: { user: { id: string; email: string } | null }) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -63,8 +60,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       const data = await response.json();
 
       onLogin({
-        token: data.token,
-        user: data.user,
+        user: {
+          id: data.user.id.toString(),
+          email: data.user.email,
+        },
       });
 
       navigate('/dashboard');

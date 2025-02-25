@@ -38,7 +38,31 @@ const LandingLayout: React.FC<LandingLayoutProps> = () => {
                 </div>
               </div>
             </section>
-
+            {/* About Section */}
+            <section id='forms' className='content-section'>
+              <h2 className='section-title'>Eliminate the Middleman</h2>
+              <div className='subsection'>
+                <h3 className='subsection-title'>
+                  Cerberus was designed for developers who want to have full
+                  control of their relationship with users.
+                </h3>
+                <p className='section-text'>
+                  Users can register and sign-in via the traditional
+                  password-based authentication, or the modern and secure
+                  passkeys.
+                </p>
+                <p className='section-text'>
+                  Try it out by entering your credentials on the form in this
+                  page.
+                </p>
+                <p className='section-text'>
+                  For session management, users authenticated via password are
+                  managed with JWTs, while those authenticated with passkeys are
+                  managed with Redis sessions.
+                </p>
+                <p className='section-text'>See more details below</p>
+              </div>
+            </section>
             {/* About Section */}
             <section id='about' className='content-section'>
               <h2 className='section-title'>About Cerberus</h2>
@@ -89,12 +113,27 @@ const LandingLayout: React.FC<LandingLayoutProps> = () => {
 
               <div id='contributors' className='subsection'>
                 <h3 className='subsection-title'>Contributors</h3>
-                <p className='section-text'>Coming soon...</p>
+                <ul>
+                  <li>
+                    <a href='https://github.com/fsantin1985'>Fabiano Santin</a>
+                  </li>
+                  <li>
+                    <a href='https://github.com/mjosephson5'>Molly Josephson</a>
+                  </li>
+                  <li>
+                    <a href='https://github.com/duimaurisfootball'>
+                      Gabriel Davis
+                    </a>
+                  </li>
+                  <li>Boyu Hu</li>
+                </ul>
               </div>
 
               <div id='sponsors' className='subsection'>
                 <h3 className='subsection-title'>Sponsors</h3>
-                <p className='section-text'>Coming soon...</p>
+                <p className='section-text'>
+                  <a href='https://www.opensourcelabs.io/'>OSLabs</a>
+                </p>
               </div>
             </section>
           </div>
