@@ -267,6 +267,9 @@ For macOS/Linux:
 
    `./server/db/setup.sh`
 
+3. If database isn't showing up in pgAdmin:
+   Right click on database and press refresh
+
 For Windows:
 
 1. Using Git Bash or WSL (recommended):
