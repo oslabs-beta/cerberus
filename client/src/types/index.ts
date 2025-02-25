@@ -1,4 +1,3 @@
-// src/types/index.ts
 export interface UserProfile {
   email: string;
   createdAt: string;
