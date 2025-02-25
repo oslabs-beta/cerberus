@@ -55,6 +55,7 @@ const App: React.FC = () => {
   }
 
   return (
+    <div>
     <Routes>
       {/* Public routes with landing layout */}
       <Route
@@ -129,11 +130,11 @@ const App: React.FC = () => {
 
         {/* Catch-all route */}
         <Route path='*' element={<Navigate to='/' replace />} />
-      
+      </Routes>
 
-      {/* chatbot button*/}
+      {/* chatbot button */}
       <ChatWidget />
-    </Routes>
+      </div>
   );
 };
 

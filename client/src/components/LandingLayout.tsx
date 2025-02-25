@@ -125,7 +125,10 @@ const LandingLayout: React.FC<LandingLayoutProps> = () => {
                       Gabriel Davis
                     </a>
                   </li>
-                  <li>Boyu Hu</li>
+                  <li><a href='https://github.com/BoyuHu514'>
+                      Boyu Hu
+                    </a>
+                    </li>
                 </ul>
               </div>
 
