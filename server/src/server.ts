@@ -6,6 +6,7 @@ import { dirname, join } from 'path';
 import authRouter from './routes/auth';
 import passkeyRouter from './routes/passkey-routes';
 import session from 'express-session';
+import chatRoutes from './routes/chatRoutes'
 import { createClient } from 'redis';
 import { RedisStore } from 'connect-redis';
 import { errorHandler } from './middlewares/errorHandler';
@@ -128,6 +129,8 @@ app.use('/api/passkey', passkeyRouter);
 
 // Protected routes - all routes here require authentication
 app.use('/api/user', protectedRoutes);
+// chatgpt routes
+app.use('/api/chatbot', chatRoutes);
 
 /************************************************************************************
  *                               Catch-all route handler

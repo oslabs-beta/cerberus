@@ -16,6 +16,8 @@ import Dashboard from './components/Dashboard';
 import CreatePasskey from './components/CreatePasskey';
 import PasskeyLogin from './components/PasskeyLogin';
 import ProtectedRoute from './components/ProtectedRoute';
+import Oauth from './components/Oauth';
+import ChatWidget from './components/ChatWidget'; // 
 
 // Styles
 import './App.css';
@@ -60,7 +62,6 @@ const App: React.FC = () => {
               )
             }
           />
-          {/* Passkey Login route */}
           <Route
             path='/login-passkey'
             element={
@@ -71,8 +72,6 @@ const App: React.FC = () => {
               )
             }
           />
-
-          {/* Sign up route */}
           <Route
             path='/signup'
             element={
@@ -108,6 +107,9 @@ const App: React.FC = () => {
         {/* Catch-all route */}
         <Route path='*' element={<Navigate to='/' replace />} />
       </Routes>
+
+      {/* ✅ 在整个 App 里添加 Chatbot 按钮 */}
+      <ChatWidget />
     </Router>
   );
 };
