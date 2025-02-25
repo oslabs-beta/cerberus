@@ -2,6 +2,7 @@
   "name": "cerberus",
   "private": true,
   "version": "0.0.0",
+  "description": "A secure authentication system with passkey and password support",
   "type": "module",
   "scripts": {
     "dev:server": "tsx watch server/src/server.ts",
@@ -16,6 +17,14 @@
     "test": "NODE_ENV=test vitest --run --reporter verbose --globals",
     "test:watch": "NODE_ENV=test vitest"
   },
+  "keywords": [
+    "authentication",
+    "passkeys",
+    "webauthn",
+    "security",
+    "auth"
+  ],
+  "license": "MIT",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
