@@ -5,7 +5,7 @@ const useChat = () => {
 
   const sendMessage = async (text: string) => {
     setMessages((prev) => [...prev, { sender: 'user', text }]);
-    const response = await fetch('http://localhost:3000/chatbot', {
+    const response = await fetch('http://localhost:3000/api/chatbot', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text }),
