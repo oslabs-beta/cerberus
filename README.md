@@ -1,10 +1,22 @@
 # Cerberus Authentication Toolkit
 
+A comprehensive authentication toolkit supporting both traditional password-based authentication and modern passkeys (WebAuthn).
+
 reference: https://github.com/CodesmithLLC/PRO-README?tab=readme-ov-file
 
 https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 
 https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks
+
+## Features
+
+- Dual authentication methods: Passkey (WebAuthn) and traditional passwords
+- Session management with Redis
+- JWT support for API authentication
+- Password reset functionality
+- Express-based middleware
+- TypeScript support
+- Rate limiting and security headers
 
 ## About
 
@@ -25,6 +37,29 @@ Besides these frontend components and integrated functionality, you get all the 
 ## Get Started
 
 The easiest way to get started is by forking this repository and working from the existing codebase.
+
+```bash
+npm install cerberus-auth
+```
+
+### Quick Start
+
+```javascript
+// Basic setup example
+import { setupCerberus } from 'cerberus-auth';
+
+const app = express();
+setupCerberus(app, {
+  redisUrl: process.env.REDIS_URL,
+  sessionSecret: process.env.SESSION_SECRET,
+  jwtSecret: process.env.JWT_SECRET,
+  rpName: 'Your App Name',
+  rpID: 'your-domain.com',
+});
+
+// Now you can use the authentication routes
+// GET /api/auth/login, /api/passkey/register-start, etc.
+```
 
 See the Database Setup Instructions section below on specifics concerning the database as well as environment variables needed.
 
@@ -160,8 +195,8 @@ export const handleLoginFinish = async (req, res, next) => {
 
     // 4. On next request:
     // - Browser sends cookie
-    // - Server verifies signature with SESSION_SECRET
-    // - If valid, gets data from Redis using session ID
+    // - Server verifies cookie's signature with SESSION_SECRET
+    // - If the signature is valid, the server gets user and session data from Redis store and validates the session - otherwise, the user is redirected to login form
 
     next();
   } catch (error) {
@@ -266,6 +301,9 @@ For macOS/Linux:
 2. Run the script:
 
    `./server/db/setup.sh`
+
+3. If database isn't showing up in pgAdmin:
+   Right click on database and press refresh
 
 For Windows:
 
@@ -405,9 +443,11 @@ When testing email features (password reset, etc.):
 - [Fabiano Santin](https://github.com/fsantin1985)
 - [Molly Josephson](https://github.com/mjosephson5)
 - [Gabriel Davis](https://github.com/duimaurisfootball)
-- Boyu Hu
+- [Boyu Hu](https://github.com/BoyuHu514)
 
 ## Feedback and Contributions
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Contacts
 

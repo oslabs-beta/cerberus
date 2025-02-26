@@ -45,7 +45,7 @@ if (!process.env.SESSION_SECRET) {
 const app: Express = express();
 
 // Initialize Redis client
-const redisClient = createClient({
+export const redisClient = createClient({
   url: process.env.REDIS_URL || 'redis://localhost:6379',
 });
 

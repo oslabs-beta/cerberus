@@ -1,11 +1,8 @@
 /* styles/forms.css */
 .auth-form-container {
-  max-width: 400px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: var(--neutral-100);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100%; /* Fill available space */
+  margin: 0 auto 1rem; /* Remove top margin to reduce vertical space */
+  padding: 1.5rem;
 }
 
 .password-form {
@@ -38,10 +35,7 @@
 .form-input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--neutral-300);
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.2s ease;
+  height: 48px; /* Consistent height */
 }
 
 .form-input:focus {
@@ -59,14 +53,8 @@
 .form-button {
   width: 100%;
   padding: 0.75rem;
-  background-color: var(--primary-main);
-  color: var(--neutral-100);
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  height: 48px; /* Consistent height */
+  margin-top: 1rem;
 }
 
 .form-button:hover {
