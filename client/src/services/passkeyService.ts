@@ -5,9 +5,11 @@ import {
 import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types';
 import { LoginResponse } from '../hooks/types';
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
 const createPasskey = async (email: string) => {
   try {
-    const startResponse = await fetch('/api/passkey/register-start', {
+    const startResponse = await fetch(`${API_BASE_URL}/api/passkey/register-start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,8 +28,7 @@ const createPasskey = async (email: string) => {
       throw new Error(`Failed to start registration: ${errorText}`);
     }
     // convert registration options to JSON
-    const options: PublicKeyCredentialCreationOptionsJSON =
-      await startResponse.json();
+    const options: PublicKeyCredentialCreationOptionsJSON = await startResponse.json();
 
     // Start the registration process
     const registrationResponse = await startRegistration({
@@ -35,12 +36,13 @@ const createPasskey = async (email: string) => {
     });
 
     // Send attestationResponse back to server for verification and storage.
-    const finishResponse = await fetch('/api/passkey/register-finish', {
+    const finishResponse = await fetch(`${API_BASE_URL}/api/passkey/register-finish`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(registrationResponse),
       credentials: 'include', // Important for session cookies
     });
+    
     if (!finishResponse.ok) {
       const errorText = await finishResponse.text();
       console.error('Registration finish failed:', {
@@ -50,8 +52,8 @@ const createPasskey = async (email: string) => {
       });
       throw new Error(`Registration verification failed: ${errorText}`);
     }
-    const verificationResult = await finishResponse.json();
 
+    const verificationResult = await finishResponse.json();
     return verificationResult.verified;
   } catch (error) {
     console.error('Passkey creation error:', error);
@@ -62,7 +64,7 @@ const createPasskey = async (email: string) => {
 const login = async (email: string): Promise<LoginResponse> => {
   try {
     // Get login options from server. Here, we also receive the challenge.
-    const response = await fetch('/api/passkey/login-start', {
+    const response = await fetch(`${API_BASE_URL}/api/passkey/login-start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -75,6 +77,7 @@ const login = async (email: string): Promise<LoginResponse> => {
       console.error('Login start failed:', errorText);
       throw new Error(`Failed to get login options: ${errorText}`);
     }
+
     // Convert the login options to JSON.
     const options = await response.json();
 
@@ -84,7 +87,7 @@ const login = async (email: string): Promise<LoginResponse> => {
       const assertionResponse = await startAuthentication(options);
 
       // Send assertionResponse back to server for verification.
-      const verificationResponse = await fetch('/api/passkey/login-finish', {
+      const verificationResponse = await fetch(`${API_BASE_URL}/api/passkey/login-finish`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(assertionResponse),
@@ -120,6 +123,7 @@ const login = async (email: string): Promise<LoginResponse> => {
           user: fallbackUser,
         };
       }
+
       return {
         verification: loginData.verification,
         user: {
@@ -141,4 +145,5 @@ const login = async (email: string): Promise<LoginResponse> => {
     throw new Error('Passkey login failed: Unknown error');
   }
 };
+
 export { createPasskey, login };

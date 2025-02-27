@@ -3,20 +3,19 @@ import type { Express } from 'express';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import authRouter from './routes/auth';
-import passkeyRouter from './routes/passkey-routes';
+import authRouter from './routes/auth.js';
+import passkeyRouter from './routes/passkey-routes.js';
 import session from 'express-session';
-import chatRoutes from './routes/chatRoutes'
+import chatRoutes from './routes/chatRoutes.js'
 import { createClient } from 'redis';
 import { RedisStore } from 'connect-redis';
-import { errorHandler } from './middlewares/errorHandler';
+import { errorHandler } from './middlewares/errorHandler.js';
 import cookieParser from 'cookie-parser';
-import oauthRouter from './routes/oauthRoutes'
+// import oauthRouter from './routes/oauthRoutes.js'
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import protectedRoutes from './routes/protected-routes';
-import { authMonitoring } from './middlewares/authMonitoring';
-import cookieParser from 'cookie-parser';
+import protectedRoutes from './routes/protected-routes.js';
+import { authMonitoring } from './middlewares/authMonitoring.js';
 import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,9 +24,7 @@ const __dirname = dirname(__filename);
 // CORS configuration
 const corsOptions = {
   origin:
-    process.env.NODE_ENV === 'production'
-      ? process.env.FRONTEND_URL
-      : ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  process.env.FRONTEND_URL || 'https://cerberus-client-hzt1l73f9-boyu-hus-projects.vercel.app',
   credentials: true, // Important for cookies
   optionsSuccessStatus: 200,
 };
@@ -35,7 +32,7 @@ const corsOptions = {
 // Load environment variables
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 8080;
 
 // const app = express();
 if (!process.env.SESSION_SECRET) {
@@ -54,7 +51,10 @@ redisClient.on('error', (err) => console.log('Redis Client Error', err));
 redisClient.on('connect', () => console.log('Redis Client Connected'));
 
 // Connect to Redis
-await redisClient.connect();
+redisClient.connect().catch((err) => {
+  console.error("❌ Redis connection failed:", err);
+});
+
 
 // Initialize store
 const redisStore = new RedisStore({
@@ -79,10 +79,7 @@ app.use(cors(corsOptions));
 // app.set('trust proxy', '127.0.0.1');
 // or if you're behind a single proxy:
 // app.set('trust proxy', 1);
-app.set('trust proxy', function (ip: string) {
-  // Only trust requests from localhost or your proxy's IP
-  return ip === '127.0.0.1' || ip === 'your-proxy-ip';
-});
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet()); // Adds security headers
@@ -138,7 +135,7 @@ app.use(express.static(join(__dirname, '../../client/dist')));
 // Password-based authentication routes
 app.use('/api/auth', authRouter);
 // oauth authentication routes
-app.use('/api/oauth', oauthRouter)
+// app.use('/api/oauth', oauthRouter)
 // Passkeys-based authentication routes
 app.use('/api/passkey', passkeyRouter);
 
@@ -172,7 +169,7 @@ app.use(errorHandler);
  * start server
  */
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });
 }

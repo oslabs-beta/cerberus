@@ -1,8 +1,8 @@
 // src/routes/protected-routes.ts
 import express from 'express';
-import { requirePasskeyAuth } from '../middlewares/requirePasskeyAuth';
-import { userService } from '../models/passkeys-user-service';
-import { redisClient } from '../server';
+import { requirePasskeyAuth } from '../middlewares/requirePasskeyAuth.js';
+import { userService } from '../models/passkeys-user-service.js';
+import { redisClient } from '../server.js';
 
 const router = express.Router();
 

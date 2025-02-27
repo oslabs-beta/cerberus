@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import type { Request, Response } from 'express';
-import formBasedController from '../controllers/formBasedController';
+import formBasedController from '../controllers/formBasedController.js';
 import nodemailer from 'nodemailer';
 import rateLimit from 'express-rate-limit';
 

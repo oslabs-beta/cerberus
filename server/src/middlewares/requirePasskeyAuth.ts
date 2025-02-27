@@ -1,12 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
-import { CustomError } from '../middlewares/customError';
+import { CustomError } from '../middlewares/customError.js';
 import jwt from 'jsonwebtoken';
 import type { JwtPayload } from 'jsonwebtoken';
 
 interface TokenPayload extends JwtPayload {
   userId: string | number;
   email?: string;
-  // Add any other properties token contains
 }
 
 export const requirePasskeyAuth = (
@@ -14,34 +13,39 @@ export const requirePasskeyAuth = (
   _res: Response,
   next: NextFunction
 ) => {
-  // First check session-based auth (passkeys)
-  if (req.session.isAuthenticated && req.session.loggedInUserId) {
-    // Update last activity
+  console.log("🔍 Checking authentication...");
+  console.log("🔹 Session Data:", req.session);
+
+  // **1️⃣ Check session-based authentication (Passkey login)**
+  if (req.session?.isAuthenticated && req.session?.loggedInUserId) {
+    console.log("✅ Session-based authentication success!");
     req.session.lastActivity = new Date();
     return next();
   }
 
-  // If not session authenticated, check for token-based auth
+  // **2️⃣ Check JWT token authentication**
   const accessToken = req.cookies?.accessToken;
+  console.log("🔹 Access Token:", accessToken ? "Exists" : "Not Found");
 
   if (accessToken) {
     try {
-      // Verify the token
+      // Verify the JWT token
       const decoded = jwt.verify(
         accessToken,
         process.env.JWT_SECRET!
       ) as TokenPayload;
 
-      // Store the user ID in the session temporarily
-      req.session.loggedInUserId = decoded.userId.toString();
+      console.log("✅ JWT Authentication success!", decoded);
 
+      // Store user ID in session
+      req.session.loggedInUserId = decoded.userId.toString();
       return next();
     } catch (error) {
-      // Token error, fall through to authentication required error
-      console.error(error);
+      console.error("❌ JWT verification failed:", error);
     }
   }
 
-  // If we get here, neither authentication method succeeded
+  // **3️⃣ If both authentication methods fail, return 401 Unauthorized**
+  console.warn("❌ Authentication failed: No valid session or token.");
   return next(new CustomError('Authentication required', 401));
 };

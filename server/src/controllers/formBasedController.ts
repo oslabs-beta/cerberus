@@ -1,11 +1,11 @@
 // Handles password-based authentication
 
-import userModel from '../models/db';
-import bcrypt from 'bcrypt';
+import userModel from '../models/db.js';
+import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import type { Request, Response, NextFunction } from 'express';
-import { tokenService } from '../services/tokenService';
+import { tokenService } from '../services/tokenService.js';
 
 interface FormBasedController {
   validateRegistration: (

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { JwtPayload, Secret } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
-import { query } from '../config/database';
+import { query } from '../config/database.js';
 
 interface TokenPayload {
   userId: number;

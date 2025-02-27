@@ -10,9 +10,11 @@ interface LoginHistoryItem {
   success: boolean;
 }
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
 export const userApiService = {
   async getProfile() {
-    return fetch('/api/user/profile', {
+    return fetch(`${API_BASE_URL}/api/user/profile`, {
       credentials: 'include',
     }).then((res) => {
       if (!res.ok) throw new Error('Failed to fetch profile');
@@ -21,7 +23,7 @@ export const userApiService = {
   },
 
   async getLoginHistory() {
-    return fetch('/api/user/login-history', {
+    return fetch(`${API_BASE_URL}/api/user/login-history`, {
       credentials: 'include',
     }).then((res) => {
       if (!res.ok) throw new Error('Failed to fetch login history');
@@ -30,7 +32,7 @@ export const userApiService = {
   },
 
   async getUserActivity() {
-    return fetch('/api/user/activity', {
+    return fetch(`${API_BASE_URL}/api/user/activity`, {
       credentials: 'include',
     }).then((res) => {
       if (!res.ok) throw new Error('Failed to fetch activity');

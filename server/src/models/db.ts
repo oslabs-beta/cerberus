@@ -1,6 +1,6 @@
 // PostgreSQL queries used during password-based authentication
 
-import { query } from '../config/database';
+import { query } from '../config/database.js';
 import type { QueryResult } from 'pg';
 
 export interface User {

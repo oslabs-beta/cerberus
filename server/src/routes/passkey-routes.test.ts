@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import supertest from 'supertest';
-import app from '../server';
-import { userService } from '../models/passkeys-user-service';
+import app from '../server.js';
+import { userService } from '../models/passkeys-user-service.js';
 
 // Create a supertest instance
 const request = supertest(app);

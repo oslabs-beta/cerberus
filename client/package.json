@@ -1,0 +1,36 @@
+{
+    "name": "cerberus-client",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Frontend for Cerberus authentication system",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.0",
+        "@fontsource/roboto": "^5.1.1",
+        "@mui/icons-material": "^6.4.2",
+        "@mui/material": "^6.4.2",
+        "@simplewebauthn/browser": "^13.1.0",
+        "highlight.js": "^11.11.1",
+        "lucide-react": "^0.476.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "react-router-dom": "^7.1.5",
+        "tailwindcss": "^4.0.3"
+    },
+    "devDependencies": {
+        "@simplewebauthn/types": "^12.0.0",
+        "@vitejs/plugin-react": "^4.3.4",
+        "autoprefixer": "^10.4.20",
+        "eslint": "^9.17.0",
+        "eslint-plugin-react-hooks": "^5.0.0",
+        "postcss": "^8.5.1",
+        "vite": "^6.0.5"
+    }
+}

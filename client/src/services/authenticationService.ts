@@ -17,6 +17,8 @@ interface LoginCredentials {
   password?: string;
 }
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
 export class AuthenticationService {
   private static instance: AuthenticationService;
 
@@ -35,7 +37,7 @@ export class AuthenticationService {
     credentials: LoginCredentials
   ): Promise<AuthResponse> {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -123,7 +125,7 @@ export class AuthenticationService {
         throw new Error('Password is required for registration');
       }
 
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -154,7 +156,7 @@ export class AuthenticationService {
     // Clear any stored authentication state
     // You might need to add more cleanup logic here
     try {
-      await fetch('/api/auth/logout', {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -165,3 +167,4 @@ export class AuthenticationService {
 }
 
 export const authService = AuthenticationService.getInstance();
+

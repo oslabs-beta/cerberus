@@ -1,4 +1,4 @@
-import { query } from '../config/database';
+import { query } from '../config/database.js';
 import type { QueryResult } from 'pg';
 
 interface LoginHistory {

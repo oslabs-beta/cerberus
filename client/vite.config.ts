@@ -7,8 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://server-falling-wind-1326.fly.dev',
         changeOrigin: true,
+        secure: true,
       },
     },
   },

@@ -2,7 +2,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import passport from 'passport';
 import dotenv from 'dotenv';
-import { pool } from '../models/db';
+import {pool} from "../config/database.js";
 
 dotenv.config();
 
@@ -13,7 +13,7 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackURL: '/api/auth/google/callback',
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (_accessToken, _refreshToken, profile, done) => {
       try {
         const email = profile.emails?.[0]?.value;
         const res = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -41,7 +41,7 @@ passport.use(
       callbackURL: '/api/auth/github/callback',
       scope: ['user:email'],
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (_accessToken, _refreshToken, profile, done) => {
       try {
         const email = profile.emails?.[0]?.value;
         const res = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
