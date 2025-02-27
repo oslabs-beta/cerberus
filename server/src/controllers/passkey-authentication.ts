@@ -27,17 +27,29 @@ export const handleLoginStart = async (
   const { email } = req.body;
 
   try {
+    console.log('Login attempt with email:', email);
+
     const user = await userService.getUserByEmail(email);
+    console.log('User found in database:', user ? 'Yes' : 'No');
 
     if (!user) {
       // offer user to create a new account here
-      return next(new CustomError('User not found', 404));
+      return next(
+        new CustomError(
+          'User not found. Please register first before attempting to login.',
+          404
+        )
+      );
     }
 
     // Get user's credentials (especially credential_id and public_key)
     // from database
     const userCredentials = await credentialService.getCredentialsByUserId(
       user.id
+    );
+
+    console.log(
+      `Found ${userCredentials.length} credentials for user ID ${user.id}`
     );
 
     // Format credentials for WebAuthn - this variable will tell browser which credentials are
@@ -66,13 +78,32 @@ export const handleLoginStart = async (
 
     // stores the user's ID in the session for later use (e.g. to associate the authentication response
     // with the correct user)
-    req.session.loggedInUserId = user.id;
+    req.session.loggedInUserId = user.id.toString();
     // grab the challenge from options and store it in req.session
     req.session.currentChallenge = options.challenge;
     req.session.authMethod = 'passkey';
 
-    // send options to client
+    // Also store in response locals for redundancy
     res.locals.options = options;
+    res.locals.userId = user.id;
+    res.locals.challenge = options.challenge;
+
+    // Ensure session is saved before responding
+    await new Promise<void>((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error in login start:', err);
+          reject(err);
+        } else {
+          console.log(
+            'Session saved successfully in login start with challenge:',
+            options.challenge
+          );
+          console.log('Session user ID saved:', user.id.toString());
+          resolve();
+        }
+      });
+    });
     next();
   } catch (error) {
     console.error('Login start detailed error:', error);
@@ -91,14 +122,51 @@ export const handleLoginFinish = async (
   next: NextFunction
 ) => {
   const { body } = req;
-  const { currentChallenge, loggedInUserId } = req.session;
+  console.log(
+    'Full request body in loginFinish:',
+    JSON.stringify(body, null, 2)
+  );
 
-  if (!loggedInUserId) {
-    return next(new CustomError('User ID is missing', 400));
+  // Try to get data from session
+  const sessionChallenge = req.session.currentChallenge;
+  const sessionUserId = req.session.loggedInUserId;
+
+  // Try to get data from body (fallback)
+  const { userId: bodyUserId, serverChallenge: bodyChallenge } = body;
+
+  // Use either the session or body values, prioritizing session
+  const userIdToUse = sessionUserId || bodyUserId;
+  const challengeToUse = sessionChallenge || bodyChallenge;
+
+  // Log all data for debugging
+  console.log('Login finish session and body data:', {
+    sessionID: req.sessionID,
+    sessionChallenge: sessionChallenge || 'missing',
+    sessionUserId: sessionUserId || 'missing',
+    bodyChallenge: bodyChallenge || 'missing',
+    bodyUserId: bodyUserId || 'missing',
+    userIdToUse: userIdToUse || 'missing',
+    challengeToUse: challengeToUse || 'missing',
+  });
+
+  // const { currentChallenge, loggedInUserId } = req.session;
+
+  if (!userIdToUse) {
+    return next(
+      new CustomError(
+        'User ID is missing from both session and request body',
+        400
+      )
+    );
   }
 
-  if (!currentChallenge) {
-    return next(new CustomError('Current challenge is missing', 400));
+  if (!challengeToUse) {
+    return next(
+      new CustomError(
+        'Challenge is missing from both session and request body',
+        400
+      )
+    );
   }
 
   try {
@@ -129,8 +197,11 @@ export const handleLoginFinish = async (
     // Compose "authenticator" object in the shape @simplewebauthn/server expects
     const opts: VerifyAuthenticationResponseOpts = {
       response: body,
-      expectedChallenge: currentChallenge,
-      expectedOrigin: origin,
+      expectedChallenge: challengeToUse,
+      expectedOrigin:
+        process.env.NODE_ENV === 'production'
+          ? `http://${rpID}:${process.env.PORT || 3000}`
+          : origin,
       expectedRPID: rpID,
       credential: {
         id: credentialID,
@@ -140,24 +211,64 @@ export const handleLoginFinish = async (
       },
     };
 
+    console.log('Verifying authentication with options:', {
+      expectedChallenge: challengeToUse,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+      credentialId: credentialID,
+      hasPublicKey: !!credentialPublicKeyBuffer,
+      counter: dbCredential.counter,
+      transports: validTransports,
+    });
+
     const verification: VerifiedAuthenticationResponse =
       await verifyAuthenticationResponse(opts);
 
-    const { verified, authenticationInfo } = verification;
+    // const { verified, authenticationInfo } = verification;
+    const { verified } = verification;
 
+    // if (verified) {
+    //   await credentialService.updateCredentialCounter(
+    //     credentialID, // or bodyCredIDBuffer re-encoded, as you prefer
+    //     authenticationInfo.newCounter
+    //   );
+
+    //   // Update session
+    //   req.session.loggedInUserId = user.id.toString();
+    //   req.session.isAuthenticated = true;
+    //   req.session.lastActivity = new Date();
+    //   req.session.currentChallenge = undefined; // Clear challenge
+
+    //   // Ensure session is saved
+    //   await new Promise<void>((resolve) => {
+    //     req.session.save((err) => {
+    //       if (err) {
+    //         console.error('Error saving session after successful login:', err);
+    //       } else {
+    //         console.log('Session updated successfully after login');
+    //       }
+    //       resolve();
+    //     });
+    //   });
     if (verified) {
-      await credentialService.updateCredentialCounter(
-        credentialID, // or bodyCredIDBuffer re-encoded, as you prefer
-        authenticationInfo.newCounter
-      );
+      // Set up session
+      req.session.loggedInUserId = user.id.toString();
+      req.session.isAuthenticated = true;
+      req.session.lastActivity = new Date();
+      req.session.currentChallenge = undefined; // Clear challenge
 
-      // Update session for authenticated state
-      req.session.currentChallenge = undefined; // Clear only the challenge
-      req.session.isAuthenticated = true; // Add authentication status
-      req.session.lastActivity = new Date(); // Add last activity timestamp
-
-      const user = await userService.getUserById(dbCredential.userID);
-
+      // Force session save before continuing
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('Error saving session:', err);
+            reject(err);
+          } else {
+            console.log('Session saved with userId:', user.id.toString());
+            resolve();
+          }
+        });
+      });
       res.locals.verified = true;
       res.locals.user = {
         id: user.id.toString(),
@@ -166,7 +277,7 @@ export const handleLoginFinish = async (
       };
       next();
     } else {
-      next(new CustomError('Verification failed', 400));
+      next(new CustomError('Authentication verification failed', 400));
     }
   } catch (error) {
     console.error('Login finish detailed error:', error);

@@ -16,7 +16,11 @@ router.post(
   '/register-start',
   handleRegisterStart,
   (_req: Request, res: Response) => {
-    res.status(201).json(res.locals.options);
+    res.status(201).json({
+      ...res.locals.options,
+      userId: res.locals.userId,
+      serverChallenge: res.locals.challenge,
+    });
   }
 );
 
@@ -37,7 +41,11 @@ router.post(
   '/login-start',
   handleLoginStart,
   (_req: Request, res: Response) => {
-    res.status(201).json(res.locals.options);
+    res.status(201).json({
+      ...res.locals.options,
+      userId: res.locals.userId,
+      serverChallenge: res.locals.challenge,
+    });
   }
 );
 

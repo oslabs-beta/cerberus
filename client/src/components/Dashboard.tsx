@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { LogOut } from 'lucide-react';
 import '../styles/Dashboard.css';
 import { useDashboardData } from '../hooks/useDashboardData';
 import type { LoginHistoryItem } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -10,6 +11,21 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
   const { dashboardData, error, isLoading } = useDashboardData();
+
+  const navigate = useNavigate();
+
+  // If user somehow reaches dashboard without authentication, redirect them
+  useEffect(() => {
+    fetch('/api/user/me', { credentials: 'include' })
+      .then((res) => {
+        if (!res.ok) {
+          navigate('/', { replace: true });
+        }
+      })
+      .catch(() => {
+        navigate('/', { replace: true });
+      });
+  }, [navigate]);
 
   if (isLoading) {
     return <div className='dashboard-container'>Loading...</div>;
