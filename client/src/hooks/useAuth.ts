@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface User {
   id: string;
@@ -18,49 +18,52 @@ export const useAuth = () => {
     user: null,
   });
 
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        // Use the correct endpoint
-        const response = await fetch('/api/user/me', {
-          credentials: 'include',
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      console.log('Checking authentication status...');
+      // Use the correct endpoint
+      const response = await fetch('/api/user/me', {
+        credentials: 'include',
+        cache: 'no-store', // Prevent caching
+      });
+      console.log('Auth check response status:', response.status);
+
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('User is authenticated:', userData);
+        setAuthState({
+          isAuthenticated: true,
+          isLoading: false,
+          user: userData,
         });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setAuthState({
-            isAuthenticated: true,
-            isLoading: false,
-            user: userData,
-          });
-        } else if (response.status === 401) {
-          // Silent handling for 401 - expected when not logged in
-
-          setAuthState({
-            isAuthenticated: false,
-            isLoading: false,
-            user: null,
-          });
-        } else {
-          console.warn(`Auth check failed with status: ${response.status}`);
-          setAuthState({
-            isAuthenticated: false,
-            isLoading: false,
-            user: null,
-          });
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
+      } else if (response.status === 401) {
+        console.log('User is not authenticated (401 status)');
+        setAuthState({
+          isAuthenticated: false,
+          isLoading: false,
+          user: null,
+        });
+      } else {
+        console.warn(`Auth check failed with status: ${response.status}`);
         setAuthState({
           isAuthenticated: false,
           isLoading: false,
           user: null,
         });
       }
-    };
-
-    checkAuthStatus();
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setAuthState({
+        isAuthenticated: false,
+        isLoading: false,
+        user: null,
+      });
+    }
   }, []);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   const handleLogout = async () => {
     try {
@@ -73,8 +76,12 @@ export const useAuth = () => {
         console.error('Logout failed:', await response.text());
       }
 
-      // Clear any local storage items if you're using them
-      // localStorage.removeItem('user');
+      // Clear authentication state
+      setAuthState({
+        isAuthenticated: false,
+        isLoading: false,
+        user: null,
+      });
 
       // Force a page reload to clear any in-memory state
       window.location.href = '/';
@@ -106,10 +113,14 @@ export const useAuth = () => {
       });
     }
   };
-
+  const refreshAuthStatus = () => {
+    setAuthState((prev) => ({ ...prev, isLoading: true }));
+    checkAuthStatus();
+  };
   return {
     ...authState,
     handleLogin,
     handleLogout,
+    refreshAuthStatus,
   };
 };

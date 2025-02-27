@@ -87,4 +87,20 @@ router.post('/logout', requirePasskeyAuth, (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
+router.get('/debug-session', (req, res) => {
+  res.json({
+    sessionID: req.sessionID,
+    sessionData: {
+      loggedInUserId: req.session.loggedInUserId,
+      isAuthenticated: req.session.isAuthenticated,
+      authMethod: req.session.authMethod,
+      lastActivity: req.session.lastActivity,
+      currentChallenge: req.session.currentChallenge
+        ? '[present]'
+        : '[not set]',
+    },
+    cookies: req.cookies,
+  });
+});
+
 export default router;

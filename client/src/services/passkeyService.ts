@@ -2,7 +2,7 @@ import {
   startRegistration,
   startAuthentication,
 } from '@simplewebauthn/browser';
-import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types';
+// import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/types';
 import { LoginResponse } from '../hooks/types';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -27,19 +27,34 @@ const createPasskey = async (email: string) => {
       });
       throw new Error(`Failed to start registration: ${errorText}`);
     }
-    // convert registration options to JSON
-    const options: PublicKeyCredentialCreationOptionsJSON = await startResponse.json();
+    // Parse the full response first
+    const fullResponse = await startResponse.json();
+    console.log('Registration options received:', fullResponse);
+
+    // Extract the relevant fields
+    const { serverChallenge, userId, ...options } = fullResponse;
 
     // Start the registration process
     const registrationResponse = await startRegistration({
       optionsJSON: options,
     });
 
+    console.log('WebAuthn registration response:', registrationResponse);
+
+    // Create the final payload including both the WebAuthn response and our userId
+    const finishPayload = {
+      ...registrationResponse,
+      userId: userId,
+      serverChallenge,
+    };
+
+    console.log('Sending registration finish payload:', finishPayload);
+
     // Send attestationResponse back to server for verification and storage.
     const finishResponse = await fetch(`${API_BASE_URL}/api/passkey/register-finish`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(registrationResponse),
+      body: JSON.stringify(finishPayload),
       credentials: 'include', // Important for session cookies
     });
     
@@ -63,6 +78,8 @@ const createPasskey = async (email: string) => {
 
 const login = async (email: string): Promise<LoginResponse> => {
   try {
+    console.log('Starting login process for email:', email);
+
     // Get login options from server. Here, we also receive the challenge.
     const response = await fetch(`${API_BASE_URL}/api/passkey/login-start`, {
       method: 'POST',
@@ -77,31 +94,46 @@ const login = async (email: string): Promise<LoginResponse> => {
       console.error('Login start failed:', errorText);
       throw new Error(`Failed to get login options: ${errorText}`);
     }
+    // Parse full response
+    const fullResponse = await response.json();
+    console.log('Login options received:', fullResponse);
 
-    // Convert the login options to JSON.
-    const options = await response.json();
+    // Extract metadata and WebAuthn options
+    const { serverChallenge, userId, ...options } = fullResponse;
 
     try {
       // This triggers the browser to display the passkey / WebAuthn modal (e.g. Face ID, Touch ID, Windows Hello).
       // A new assertionResponse is created. This also means that the challenge has been signed.
+      console.log('Starting WebAuthn authentication');
       const assertionResponse = await startAuthentication(options);
+      console.log('Authentication response received:', assertionResponse);
+
+      // Add user ID and challenge to the payload for redundancy
+      const finalPayload = {
+        ...assertionResponse,
+        userId: userId,
+        serverChallenge: serverChallenge,
+      };
+
+      console.log('Sending login verification request');
 
       // Send assertionResponse back to server for verification.
       const verificationResponse = await fetch(`${API_BASE_URL}/api/passkey/login-finish`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(assertionResponse),
+        body: JSON.stringify(finalPayload),
         credentials: 'include',
       });
 
       if (!verificationResponse.ok) {
         const errorText = await verificationResponse.text();
+        console.error('Login verification failed:', errorText);
         throw new Error(`Login verification failed: ${errorText}`);
       }
 
       // Parse the complete response
       const loginData = await verificationResponse.json();
-      console.log('Full login response data:', loginData);
+      console.log('Login verification result:', loginData);
 
       if (!loginData.verification) {
         throw new Error('Login verification failed');

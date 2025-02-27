@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { login } from '../services/passkeyService.ts'; // API call
 import { validateEmail } from '../utils/validation.ts'; // email validation
 import { UseLoginWithPasskeyProps } from './types';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface UsePasskeyFormReturn {
   email: string;
@@ -16,7 +16,7 @@ export const usePasskeyLogin = (
   onLogin: UseLoginWithPasskeyProps['onLogin'],
   onLoginSuccess?: () => void
 ): UsePasskeyFormReturn => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -56,11 +56,12 @@ export const usePasskeyLogin = (
           console.log('Calling onLoginSuccess callback for navigation');
           onLoginSuccess();
         } else {
-          console.log('No onLoginSuccess callback provided');
-          // If no callback is provided, you could use window.location as a fallback
-          // window.location.href = '/dashboard';
+          console.log(
+            'No onLoginSuccess callback provided, navigating manually'
+          );
+          navigate('/dashboard', { replace: true });
         }
-      }, 100);
+      }, 500);
     } catch (error) {
       setError('Failed to log in. Please try again.');
       console.error(error);

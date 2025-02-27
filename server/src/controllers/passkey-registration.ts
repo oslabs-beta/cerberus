@@ -52,11 +52,32 @@ export const handleRegisterStart = async (
     const options = await generateRegistrationOptions(registrationOptions);
 
     // challenge is sent to authenticator (to confirm user)
-    req.session.loggedInUserId = user.id;
+    // req.session.loggedInUserId = user.id.toString();
     req.session.currentChallenge = options.challenge;
 
+    await new Promise<void>((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          reject(err);
+        } else {
+          console.log(
+            'Session saved successfully with challenge:',
+            options.challenge
+          );
+          resolve();
+        }
+      });
+    });
+
     res.locals.options = options;
+    res.locals.userId = user.id; // Pass the user ID to the route handler
+    res.locals.challenge = options.challenge; // Store the challenge to pass to the frontend
+
     next();
+
+    // res.locals.options = options;
+    // next();
   } catch (error) {
     console.error('Registration error details:', error);
     if (error instanceof Error) {
@@ -83,20 +104,39 @@ export const handleRegisterFinish = async (
   next: NextFunction
 ) => {
   const { body } = req;
-  const { currentChallenge, loggedInUserId } = req.session;
+  console.log(
+    'Full request body in registerFinish:',
+    JSON.stringify(body, null, 2)
+  );
 
-  if (!loggedInUserId) {
+  const sessionChallenge = req.session.currentChallenge;
+  const { userId, serverChallenge } = body;
+
+  // Log complete information for debugging
+  console.log('Session data in registerFinish:', {
+    sessionID: req.sessionID,
+    sessionChallenge: sessionChallenge || 'missing',
+    bodyChallenge: serverChallenge || 'missing',
+    bodyUserId: userId,
+  });
+
+  // Use the challenge from the request body if the session challenge is missing
+  const challengeToUse = sessionChallenge || serverChallenge;
+
+  if (!userId) {
     return next(new CustomError('User ID is missing', 400));
   }
 
-  if (!currentChallenge) {
-    return next(new CustomError('Current challenge is missing', 400));
+  if (!challengeToUse) {
+    return next(
+      new CustomError('Challenge is missing from both session and request', 400)
+    );
   }
 
   try {
     const verification = await verifyRegistrationResponse({
       response: body,
-      expectedChallenge: currentChallenge,
+      expectedChallenge: challengeToUse,
       expectedOrigin: origin,
       expectedRPID: rpID,
       requireUserVerification: true,
@@ -109,7 +149,7 @@ export const handleRegisterFinish = async (
 
       try {
         await credentialService.saveNewCredential(
-          parseInt(loggedInUserId),
+          parseInt(userId),
           credentialIdBase64,
           Buffer.from(credential.publicKey).toString('base64'),
           credential.counter,
@@ -133,7 +173,7 @@ export const handleRegisterFinish = async (
         : new CustomError('Internal Server Error', 500)
     );
   } finally {
-    req.session.loggedInUserId = undefined;
+    // req.session.loggedInUserId = undefined;
     req.session.currentChallenge = undefined;
   }
 };

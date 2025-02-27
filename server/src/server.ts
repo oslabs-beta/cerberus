@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import authRouter from './routes/auth.js';
 import passkeyRouter from './routes/passkey-routes.js';
+import authRouter from './routes/auth.js';
+import passkeyRouter from './routes/passkey-routes.js';
 import session from 'express-session';
 import chatRoutes from './routes/chatRoutes.js'
 import { createClient } from 'redis';
@@ -43,7 +45,7 @@ const app: Express = express();
 
 // Initialize Redis client
 export const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
+  url: process.env.REDIS_URL || 'redis://redis:6379', // 'redis' means container takes care of it (same name in docker-compose file)
 });
 
 // Redis error handling
@@ -115,8 +117,10 @@ app.use(
     cookie: {
       maxAge: parseInt(process.env.COOKIE_AGE || '86400000', 10),
       httpOnly: true, // Prevent client-side access to cookie
-      secure: process.env.NODE_ENV === 'production', // Require HTTPS in production
-      sameSite: 'strict', // CSRF protection
+      // secure: process.env.NODE_ENV === 'production', // Require HTTPS in production
+      secure: false, // Require HTTPS in production
+      // sameSite: 'strict', // CSRF protection
+      sameSite: 'lax', // CSRF protection
     },
   })
 );
@@ -143,6 +147,11 @@ app.use('/api/passkey', passkeyRouter);
 app.use('/api/user', protectedRoutes);
 // chatgpt routes
 app.use('/api/chatbot', chatRoutes);
+
+// This is specifically for client-side routing support
+app.get('*', (_req, res) => {
+  res.sendFile(join(__dirname, '../../client/dist/index.html'));
+});
 
 /************************************************************************************
  *                               Catch-all route handler

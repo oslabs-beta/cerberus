@@ -40,7 +40,10 @@ const App: React.FC = () => {
       ];
       if (publicRoutes.includes(location.pathname)) {
         console.log('Redirecting from public route to dashboard');
-        navigate('/dashboard', { replace: true });
+        // Use a timeout to ensure state has stabilized
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 100);
       }
     }
   }, [isAuthenticated, isLoading, navigate, location.pathname]);

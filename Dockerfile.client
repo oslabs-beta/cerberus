@@ -1,20 +1,18 @@
-#backend dockerfile
+#frontend dockerfile
 
 FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
 #Copy package files and install dependencies
-COPY package.json package-lock.json ./
+COPY package*.json ./
+RUN npm install
 
-RUN npm install --omit=dev
 #Copy client source code
-COPY ./server /usr/src/app/server
+COPY client/ ./
 
-WORKDIR /usr/src/app/server
-RUN npm run build || echo "No build step needed"
 #Expose port
-EXPOSE 3000
+EXPOSE 5173
 
 #Default command to start app
-CMD ["node", "src/server.js"]
+CMD ["npm", "run", "dev", "--", "--host"]
