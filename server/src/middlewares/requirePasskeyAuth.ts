@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { CustomError } from '../middlewares/customError';
+import { CustomError } from '../middlewares/customError.js';
 import jwt from 'jsonwebtoken';
 import type { JwtPayload } from 'jsonwebtoken';
 

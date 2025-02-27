@@ -3,12 +3,12 @@ import {
   verifyRegistrationResponse,
 } from '@simplewebauthn/server';
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
-import { rpName, rpID, origin } from '../utils/passkeys-constants';
-import { credentialService } from '../models/passkeys-credential-service';
-import { userService } from '../models/passkeys-user-service';
+import { rpName, rpID, origin } from '../utils/passkeys-constants.js';
+import { credentialService } from '../models/passkeys-credential-service.js';
+import { userService } from '../models/passkeys-user-service.js';
 import type { GenerateRegistrationOptionsOpts } from '@simplewebauthn/server';
 import type { Request, Response, NextFunction } from 'express';
-import { CustomError } from '../middlewares/customError';
+import { CustomError } from '../middlewares/customError.js';
 
 // below function initiates the passkey registration, it generates a challenge that is sent
 // to the user for him/her to sign it

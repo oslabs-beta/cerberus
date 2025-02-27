@@ -3,11 +3,11 @@ import type { Request, Response } from 'express';
 import {
   handleRegisterFinish,
   handleRegisterStart,
-} from '../controllers/passkey-registration';
+} from '../controllers/passkey-registration.js';
 import {
   handleLoginStart,
   handleLoginFinish,
-} from '../controllers/passkey-authentication';
+} from '../controllers/passkey-authentication.js';
 
 const router: Router = express.Router();
 

@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
+    "module": "NodeNext",
     "lib": ["ES2020"],
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
 
     "outDir": "./dist",
     "rootDir": "./src",
 
     // Module resolution
-    "moduleResolution": "bundler",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "resolveJsonModule": true,
 
@@ -26,7 +29,7 @@
 
     // ES Module specific settings
     "moduleDetection": "force",
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
 
     // Path settings for your server structure
     "baseUrl": "./src",
@@ -39,8 +42,13 @@
       "@services/*": ["./services/*"],
       "@utils/*": ["./utils/*"],
       "@config/*": ["./config/*"]
-    }
+    },
+    "plugins": [
+      // Transform paths in output .js files
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "dist", "../fix-imports.js"]
 }

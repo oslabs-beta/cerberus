@@ -6,11 +6,11 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 
-import authRouter from '../routes/auth';
-import passkeyRouter from '../routes/passkey-routes';
-import protectedRoutes from '../routes/protected-routes';
-import { errorHandler } from '../middlewares/errorHandler';
-import { authMonitoring } from '../middlewares/authMonitoring';
+import authRouter from '../routes/auth.js';
+import passkeyRouter from '../routes/passkey-routes.js';
+import protectedRoutes from '../routes/protected-routes.js';
+import { errorHandler } from '../middlewares/errorHandler.js';
+import { authMonitoring } from '../middlewares/authMonitoring.js';
 
 export interface CerberusOptions {
   redisUrl?: string;

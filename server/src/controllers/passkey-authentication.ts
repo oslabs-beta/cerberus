@@ -9,14 +9,14 @@ import type {
   VerifyAuthenticationResponseOpts,
   AuthenticatorTransportFuture,
 } from '@simplewebauthn/server';
-import { base64ToUint8Array } from '../utils/passkeys-utils';
-import { rpID, origin } from '../utils/passkeys-constants';
+import { base64ToUint8Array } from '../utils/passkeys-utils.js';
+import { rpID, origin } from '../utils/passkeys-constants.js';
 import {
   credentialService,
   type DBAuthenticatorDevice,
-} from '../models/passkeys-credential-service';
-import { userService } from '../models/passkeys-user-service';
-import { CustomError } from '../middlewares/customError';
+} from '../models/passkeys-credential-service.js';
+import { userService } from '../models/passkeys-user-service.js';
+import { CustomError } from '../middlewares/customError.js';
 
 // this starts login with passkey authentication
 export const handleLoginStart = async (

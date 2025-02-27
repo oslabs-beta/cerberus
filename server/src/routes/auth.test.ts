@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import supertest from 'supertest';
-import app from '../server';
-import formBasedController from '../controllers/formBasedController';
+import app from '../server.js';
+import formBasedController from '../controllers/formBasedController.js';
 
 // Create a supertest instance
 const request = supertest(app);
