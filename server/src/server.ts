@@ -5,8 +5,6 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import authRouter from './routes/auth.js';
 import passkeyRouter from './routes/passkey-routes.js';
-import authRouter from './routes/auth.js';
-import passkeyRouter from './routes/passkey-routes.js';
 import session from 'express-session';
 import chatRoutes from './routes/chatRoutes.js'
 import { createClient } from 'redis';
