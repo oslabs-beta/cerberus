@@ -1,6 +1,6 @@
+import './loadEnv.js';
 import express from 'express';
 import type { Express } from 'express';
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import authRouter from './routes/auth.js';
@@ -16,6 +16,7 @@ import { authMonitoring } from './middlewares/authMonitoring.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
+// Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -28,9 +29,6 @@ const corsOptions = {
   credentials: true, // Important for cookies
   optionsSuccessStatus: 200,
 };
-
-// Load environment variables
-dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 

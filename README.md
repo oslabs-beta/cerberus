@@ -371,41 +371,20 @@ psql -U postgres -d auth_db -f "C:\path\to\your\project\server\db\schema\auth.sq
 
 ## Environment Configuration
 
-1. Create a `.env` file in the root directory with the following variables:
+This project uses environment-specific configuration files.
 
-```javascript
-# Database configuration
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=auth_db
-DB_SSL=false # for local development
+1. Copy the example files to create your local environment files:
 
-# Authentication settings
-SESSION_SECRET=your_random_secure_secret
-COOKIE_AGE=86400000
-SALT_ROUNDS=10
-JWT_SECRET=your_random_JWT_secret
-REFRESH_TOKEN_SECRET=your_random_refresh_secret
-JWT_EXP='15m'
-
-# Server settings
-PORT=3000
-NODE_ENV=development
-REDIS_URL=redis://localhost:6379 # For development / For production: use a Redis service URL (like Redis Cloud, AWS ElastiCache, etc.)
-
-# MailHog
-MAIL_HOST=localhost
-MAIL_PORT=1025
-
-# Frontend - for Vite
-FRONTEND_URL=http://localhost:5173
-VITE_GITHUB_CLIENT_ID=
-VITE_PORT=5173
+```cp .env.development.example .env.development
+cp .env.production.example .env.production
+cp .env.test.example .env.test
 ```
 
-2. Replace `your_password` with your actual PostgreSQL password and `your_random_secure_secret` (and JWT and token refresh secrets) with a secure random string. For this you can run on the terminal: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
+2. Edit each file to add your specific configuration values
+
+3. Generate secure random strings for secrets:
+
+For this you can run on the terminal: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
 
 ### Starting the Application
 
