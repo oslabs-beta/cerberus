@@ -5,6 +5,9 @@
   "description": "A secure authentication system with passkey and password support",
   "type": "module",
   "scripts": {
+    "dev:server:local": "NODE_ENV=local.development tsx watch server/src/server.ts",
+    "dev:client:local": "NODE_ENV=local.development cd client && vite",
+    "dev:local": "concurrently \"npm run dev:server:local\" \"npm run dev:client:local\"",
     "dev:server": "NODE_ENV=development tsx watch server/src/server.ts",
     "dev:client": "NODE_ENV=development cd client && vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",

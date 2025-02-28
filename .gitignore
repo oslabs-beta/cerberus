@@ -24,8 +24,7 @@ dist-ssr
 *.sw?
 
 # Env
-.env
-.env.example
+.env.local.development
 .env.development
 .env.production
 .env.test

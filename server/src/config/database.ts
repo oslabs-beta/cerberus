@@ -24,11 +24,11 @@ const dbConfig: DatabaseConfig = {
   // below line determines whether or not to use SSL (Secure Sockets Layer) to encrypt data between
   // application and database - crucial for production environments, especially with cloud databases
   // for local development is not necessary
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-  // ssl:
-  //   process.env.NODE_ENV === 'production'
-  //     ? { rejectUnauthorized: false }
-  //     : false,
+  // ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  ssl:
+    process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: true }
+      : false,
   max: 20, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000,
 };

@@ -386,6 +386,8 @@ cp .env.test.example .env.test
 
 For this you can run on the terminal: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
 
+- Make sure to generate new secrets for production
+
 ### Starting the Application
 
 1. Install dependencies:

@@ -367,16 +367,19 @@ formBasedController.sendPasswordResetEmail = async (req, _res, next) => {
     await userModel.saveResetToken(user.id, resetToken, resetTokenExpiry);
 
     // Create email transport - configured for MailHog
-    const transporter = nodemailer.createTransport({
-      service: 'localhost',
-      port: 1025, // MailHog SMTP port
-      secure: false,
-      ignoreTLS: true, // since we're running locally
-      // auth: {
-      //   user: process.env.EMAIL_USER,
-      //   pass: process.env.EMAIL_APP_PASSWORD, // will need to fill this out during production
-      // },
-    });
+    // const transporter = nodemailer.createTransport({
+    //   service: 'localhost',
+    //   port: 1025, // MailHog SMTP port
+    //   secure: false,
+    //   ignoreTLS: true, // since we're running locally
+    //   // auth: {
+    //   //   user: process.env.EMAIL_USER,
+    //   //   pass: process.env.EMAIL_APP_PASSWORD, // will need to fill this out during production
+    //   // },
+    // });
+
+    const MAIL_URL = process.env.MAIL_URL || 'smtp://localhost:1025';
+    const transporter = nodemailer.createTransport(MAIL_URL);
 
     // Create reset URL
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
