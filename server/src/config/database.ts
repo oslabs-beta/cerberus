@@ -1,9 +1,8 @@
-import type { PoolConfig } from 'pg';
 import dotenv from 'dotenv';
+dotenv.config();
+import type { PoolConfig } from 'pg';
 import pkg from 'pg';
 const { Pool } = pkg;
-
-dotenv.config();
 
 // Define interface
 interface DatabaseConfig extends PoolConfig {
@@ -18,9 +17,9 @@ interface DatabaseConfig extends PoolConfig {
 const dbConfig: DatabaseConfig = {
   user: process.env.DB_USER || '',
   password: process.env.DB_PASSWORD || '',
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST!,
   port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'auth_db',
+  database: process.env.DB_NAME!,
   // for security and performance
   // below line determines whether or not to use SSL (Secure Sockets Layer) to encrypt data between
   // application and database - crucial for production environments, especially with cloud databases

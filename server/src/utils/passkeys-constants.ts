@@ -1,6 +1,5 @@
-export const rpName: string = 'Cerberus'; // Relying Party (RP), typically our website or application
-export const rpID: string = 'localhost'; // domain or hostname - browser ensures the credential can only
-// be used for this domain, example: "example.com"
+export const rpName: string = process.env.RPNAME!;
+export const rpID: string = process.env.RPID!;
 export const origin: string =
   process.env.NODE_ENV === 'production'
     ? `http://${rpID}:${process.env.PORT || 3000}` // Production: use Express port

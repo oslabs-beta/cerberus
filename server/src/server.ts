@@ -6,7 +6,7 @@ import { dirname, join } from 'path';
 import authRouter from './routes/auth.js';
 import passkeyRouter from './routes/passkey-routes.js';
 import session from 'express-session';
-import { createClient } from 'redis';
+import { createClient, RedisClientOptions } from 'redis';
 import { RedisStore } from 'connect-redis';
 import { errorHandler } from './middlewares/errorHandler.js';
 import helmet from 'helmet';
@@ -34,23 +34,33 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
-// const app = express();
 if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET environment variable is not set');
 }
 
 const app: Express = express();
 
-// Initialize Redis client
-export const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://redis:6379', // 'redis' means container takes care of it (same name in docker-compose file)
-});
+const redisOptions: RedisClientOptions = {
+  url: process.env.REDIS_URL || 'redis://localhost:6379', // 'redis' container name in docker-compose
+  // Only add socket.tls settings for production
+  ...(process.env.NODE_ENV === 'production' && process.env.REDIS_TLS === 'true'
+    ? {
+        socket: {
+          tls: true,
+          rejectUnauthorized: false,
+        },
+      }
+    : {}),
+};
+
+// Initialize Redis client with the options
+export const redisClient = createClient(redisOptions);
 
 // Redis error handling
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
 redisClient.on('connect', () => console.log('Redis Client Connected'));
 
-// Connect to Redis
+// Connect to Redis - no parameters needed here
 await redisClient.connect();
 
 // Initialize store
@@ -141,6 +151,10 @@ app.use('/api/passkey', passkeyRouter);
 
 // Protected routes for passkey authentication - all routes here require authentication
 app.use('/api/user', protectedRoutes);
+
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 // This is specifically for client-side routing support
 app.get('*', (_req, res) => {
