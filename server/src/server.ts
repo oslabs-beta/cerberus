@@ -39,7 +39,10 @@ if (!process.env.SESSION_SECRET) {
 const app: Express = express();
 
 const redisOptions: RedisClientOptions = {
-  url: process.env.REDIS_URL || 'redis://localhost:6379', // 'redis' container name in docker-compose
+  url:
+    process.env.NODE_ENV === 'production'
+      ? `redis://:${process.env.REDIS_PASSWORD}@redis:6379`
+      : 'redis://redis:6379', // Use 'redis' service name in development too
   // Only add socket.tls settings for production
   ...(process.env.NODE_ENV === 'production' && process.env.REDIS_TLS === 'true'
     ? {

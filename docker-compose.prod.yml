@@ -1,6 +1,6 @@
 services:
   client:
-    command: npm run build:client && npx serve -s client/dist -l 80
+    image: cerberusproduct/cerberus-auth:client
     ports:
       - '80:80'
     env_file:
@@ -12,42 +12,24 @@ services:
       - client_build:/usr/src/app/client/dist
 
   server:
-    command: npm run build:server && node --experimental-specifier-resolution=node server/dist/server.js
+    image: cerberusproduct/cerberus-auth:server
     ports:
       - '3000:3000'
     env_file:
       - .env.production
     environment:
       - NODE_ENV=production
-      - DB_HOST=db
-      - DB_NAME=cerberus_production # Override for production
+      - DB_HOST=db.your-aws-rds-instance.region.rds.amazonaws.com # Point to RDS
     restart: always
-    volumes:
-      - server_logs:/usr/src/app/logs
-
-  db:
-    env_file:
-      - .env.production
-    environment:
-      - POSTGRES_DB=cerberus_production # Override for production
-    restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
+    depends_on:
+      - redis
 
   redis:
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} # Set up Redis
     restart: always
-    env_file:
-      - .env.production
     volumes:
       - redis_data:/data
-    ports:
-      - '6379:6379'
 
 volumes:
-  postgres_data:
   redis_data:
-  client_build:
-  server_logs:
