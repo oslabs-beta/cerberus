@@ -1,35 +1,30 @@
-version: '3.8' # WHY?
-
 services:
-  # Frontend React application (Vite)
+  # Frontend React application
   client:
     build:
-      context: ./client
+      context: .
       dockerfile: Dockerfile
-    restart: always
+    command: npm run dev:client -- --host
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://server:3000 # Point to the server container
+    volumes:
+      - ./client:/usr/src/app/client
+      - /usr/src/app/node_modules
     ports:
-      - '5173:5173' # match your Vite dev server port
+      - '5173:5173'
     depends_on:
       - server
-    volumes:
-      - ./client:/usr/src/app
-      - /usr/src/app/node_modules
-    environment:
-      - VITE_API_URL=http://localhost:3000 #added to connect to backend
 
   # Backend Node/Express API
   server:
     build:
-      context: ./server
+      context: .
       dockerfile: Dockerfile
-    restart: always
-    ports:
-      - '3000:3000' # Keep original backend port
-    depends_on:
-      - db
-      - redis
+    command: npm run dev:server
     environment:
       - NODE_ENV=development
+      # Use hardcoded values for critical connections in base file
       - DB_HOST=db
       - DB_PORT=5432
       - DB_NAME=cerberus_db
@@ -37,28 +32,46 @@ services:
       - DB_PASSWORD=postgres
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      # Other variables will come from env_file
+      - SESSION_SECRET=731468b0daacb3e0999eae89b921b27c92dee620708668b5207b3806207bb9b12c4425cb7fa8859c529f3054a3ede005237b6f3dee0246fb229a363614e9367f
+      - JWT_SECRET=683a3bf03aa8035c51e924a24dc09d8f92c29d964d6252f9ba4372797eab0b323b9942e9bb9a0537ac3bcba9609e84ad27db822f053a05b1e3852ef5c8c7bec7
+      - REFRESH_TOKEN_SECRET=94e790df1f1ec2c6e80ab6196039861d2f0ab94d2ecdee5ae4c361ab34d2e62bf8a65e37ae34ee651f82ce248ea5d7cc5e3e13e4633f1d4d5b85eb17d5ba1de5
+      - RPID=localhost
+      - RPNAME=Cerberus
     volumes:
-      - ./server:/usr/src/app
+      - ./server:/usr/src/app/server
       - /usr/src/app/node_modules
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+      - redis
 
   # PostgreSQL Database
   db:
     image: postgres:14-alpine
-    ports:
-      - '5432:5432'
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=cerberus_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./server/db/schema:/docker-entrypoint-initdb.d
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   # Redis cache
   redis:
-    image: redis:7.2.7
-    ports:
-      - '6379:6379'
+    image: redis:7-alpine
     volumes:
       - redis_data:/data
+    ports:
+      - '6379:6379'
     command: redis-server --save 60 1 --loglevel warning
 
 volumes:

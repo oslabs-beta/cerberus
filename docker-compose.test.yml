@@ -1,0 +1,28 @@
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm test
+    env_file:
+      - .env.test
+    environment:
+      - NODE_ENV=test
+    depends_on:
+      - db_test
+      - redis_test
+
+  db_test:
+    image: postgres:14-alpine
+    env_file:
+      - .env.test
+    volumes:
+      - ./server/db/schema:/docker-entrypoint-initdb.d
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  redis_test:
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+    tmpfs:
+      - /data
