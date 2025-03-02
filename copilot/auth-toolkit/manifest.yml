@@ -1,0 +1,65 @@
+# The manifest for the "auth-toolkit" service.
+# Read the full specification for the "Request-Driven Web Service" type at:
+# https://aws.github.io/copilot-cli/docs/manifest/rd-web-service/
+
+# Your service name will be used in naming your resources like log groups, App Runner services, etc.
+name: auth-toolkit
+# The "architecture" of the service you're running.
+type: Request-Driven Web Service
+
+image:
+  # Docker build arguments.
+  # For additional overrides: https://aws.github.io/copilot-cli/docs/manifest/rd-web-service/#image-build
+  build: Dockerfile
+  # Port exposed through your container to route traffic to it.
+  port: 3000
+
+http:
+  healthcheck:
+    path: /health
+    healthy_threshold: 3
+    unhealthy_threshold: 5
+    interval: 10s
+    timeout: 5s
+
+# Number of CPU units for the task.
+cpu: 1024
+# Amount of memory in MiB used by the task.
+memory: 2048
+
+# Connect your App Runner service to your environment's VPC.
+network:
+  vpc:
+    placement: private
+
+# Enable basic observability
+observability:
+  tracing: awsxray
+
+# Environment variables
+variables:
+  NODE_ENV: production
+  PORT: 3000
+  RPNAME: 'Cerberus'
+  RPID: '${COPILOT_SERVICE_DISCOVERY_ENDPOINT}'
+  ORIGIN: 'https://${COPILOT_SERVICE_DISCOVERY_ENDPOINT}'
+
+# Secrets for sensitive information
+secrets:
+  SESSION_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/SESSION_SECRET
+  JWT_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/JWT_SECRET
+  REFRESH_TOKEN_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/REFRESH_TOKEN_SECRET
+  DB_PASSWORD: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DB_PASSWORD
+  REDIS_PASSWORD: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/REDIS_PASSWORD
+
+# You can override any of the values defined above by environment.
+environments:
+  prod:
+    variables:
+      DB_HOST: 'cerberus-db.cro4c6i282wv.us-east-1.rds.amazonaws.com'
+      DB_PORT: '5432'
+      DB_NAME: 'cerberus_db'
+      DB_USER: 'postgres'
+      REDIS_HOST: 'cerberus-redis-001.cerberus-redis.fhkwlx.use1.cache.amazonaws.com'
+      REDIS_PORT: '6379'
+      REDIS_TLS: 'true'
