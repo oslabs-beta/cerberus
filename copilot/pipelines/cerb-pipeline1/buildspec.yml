@@ -12,6 +12,8 @@ phases:
   build:
     commands:
       - echo "Run your tests"
+      - npm install
+      - npm run test
       # - make test
   post_build:
     commands:
@@ -32,4 +34,4 @@ phases:
       - ls -lah ./infrastructure
 artifacts:
   files:
-    - "infrastructure/*"
+    - 'infrastructure/*'

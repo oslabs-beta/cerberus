@@ -41,8 +41,8 @@ variables:
   NODE_ENV: production
   PORT: 3000
   RPNAME: 'Cerberus'
-  RPID: '${COPILOT_SERVICE_DISCOVERY_ENDPOINT}'
-  ORIGIN: 'https://${COPILOT_SERVICE_DISCOVERY_ENDPOINT}'
+  #RPID: '${COPILOT_SERVICE_DISCOVERY_ENDPOINT}'
+  #ORIGIN: 'https://${COPILOT_SERVICE_DISCOVERY_ENDPOINT}'
 
 # Secrets for sensitive information
 secrets:
