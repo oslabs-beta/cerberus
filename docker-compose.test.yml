@@ -3,7 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: npm test
+    command: >
+      sh -c "
+        mkdir -p /usr/src/app/server/src/test
+        ln -sf /usr/src/app/server/src/tests/setup.ts /usr/src/app/server/src/test/setup.ts
+        npm test
+      "
     env_file:
       - .env.test
     environment:
