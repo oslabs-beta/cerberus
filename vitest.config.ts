@@ -16,6 +16,6 @@ export default defineConfig({
         statements: 80,
       },
     },
-    setupFiles: ['./server/src/test/setup.ts'],
+    setupFiles: ['./server/src/tests/setup.ts'],
   },
 });
