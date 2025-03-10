@@ -9,6 +9,7 @@ services:
       - NODE_ENV=development
       - VITE_API_URL=http://server:3000 # Point to the server container
       - REDIS_URL=redis://redis:6379
+      - RUNNING_IN_DOCKER=true
     volumes:
       - ./client:/usr/src/app/client
       - /usr/src/app/node_modules
