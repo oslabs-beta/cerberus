@@ -6,49 +6,6 @@ import formBasedController from '../controllers/formBasedController.js';
 // Create a supertest instance
 const request = supertest(app);
 
-// Mock the controller methods
-vi.mock('../controllers/formBasedController', () => ({
-  default: {
-    validateRegistration: vi.fn((_req, _res, next) => next()),
-    checkExistingUser: vi.fn((_req, _res, next) => next()),
-    hashPassword: vi.fn((_req, _res, next) => next()),
-    createUser: vi.fn((req, res, next) => {
-      res.locals.user = {
-        id: 1,
-        email: req.body.email,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-      };
-      next();
-    }),
-    validateLoginData: vi.fn((_req, _res, next) => next()),
-    authenticateUser: vi.fn((req, res, next) => {
-      res.locals.user = {
-        id: 1,
-        email: req.body.email,
-      };
-      res.locals.expiresAt = Date.now() + 3600000; // 1 hour from now
-      next();
-    }),
-    validateEmail: vi.fn((_req, _res, next) => next()),
-    sendPasswordResetEmail: vi.fn((_req, _res, next) => next()),
-    validateResetToken: vi.fn((_req, _res, next) => next()),
-    resetPassword: vi.fn((_req, _res, next) => next()),
-    validateRefreshToken: vi.fn((_req, res, next) => {
-      res.locals.tokenPayload = {
-        userId: 1,
-        email: 'test@example.com',
-      };
-      next();
-    }),
-    issueNewTokens: vi.fn((_req, res, next) => {
-      res.locals.expiresAt = Date.now() + 900000; // 15 minutes
-      res.locals.success = true;
-      next();
-    }),
-  },
-}));
-
 describe('Authentication Routes', () => {
   beforeEach(() => {
     // Clear all mocks before each test

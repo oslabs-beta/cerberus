@@ -6,14 +6,6 @@ import { userService } from '../models/passkeys-user-service.js';
 // Create a supertest instance
 const request = supertest(app);
 
-// Mock the database service
-vi.mock('../models/passkeys-user-service', () => ({
-  userService: {
-    getUserByEmail: vi.fn(),
-    createUser: vi.fn(),
-  },
-}));
-
 describe('Authentication Endpoints', () => {
   beforeEach(() => {
     // Clear all mocks before each test

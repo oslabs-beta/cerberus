@@ -39,10 +39,19 @@ if (!process.env.SESSION_SECRET) {
 const app: Express = express();
 
 const redisOptions: RedisClientOptions = {
-  url:
-    process.env.NODE_ENV === 'production'
-      ? `redis://:${process.env.REDIS_PASSWORD}@redis:6379`
-      : 'redis://redis:6379', // Use 'redis' service name in development too
+  url: (() => {
+    // For Docker environments
+    if (process.env.RUNNING_IN_DOCKER === 'true') {
+      return process.env.NODE_ENV === 'production'
+        ? `redis://:${process.env.REDIS_PASSWORD}@redis:6379`
+        : 'redis://redis:6379';
+    }
+
+    // For local environments (including tests)
+    return process.env.NODE_ENV === 'production'
+      ? process.env.REDIS_URL || 'redis://localhost:6379'
+      : 'redis://localhost:6379';
+  })(),
   // Only add socket.tls settings for production
   ...(process.env.NODE_ENV === 'production' && process.env.REDIS_TLS === 'true'
     ? {
