@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
 import supertest from 'supertest';
-// import app from '../server.js';
 import formBasedController from '../controllers/formBasedController.js';
-import app from '../tests/mockApp.js';
+import app, { server } from '../tests/mockApp.js';
 
 // Create a supertest instance
 const request = supertest(app);
@@ -11,6 +10,20 @@ describe('Authentication Routes', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     vi.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    // Close the server after all tests
+    if (server.listening) {
+      return new Promise<void>((resolve) => {
+        server.close((err) => {
+          if (err) {
+            console.error('Error closing server:', err);
+          }
+          resolve();
+        });
+      });
+    }
   });
 
   describe('POST /register', () => {
