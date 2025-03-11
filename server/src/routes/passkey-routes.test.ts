@@ -1,10 +1,8 @@
+// server/src/routes/passkey-routes.test.ts
 import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
-import supertest from 'supertest';
+import request from 'supertest';
 import { userService } from '../models/passkeys-user-service.js';
-import app, { server } from '../tests/mockApp.js';
-
-// Create a supertest instance
-const request = supertest(app);
+import app from '../tests/mockApp.js';
 
 describe('Authentication Endpoints', () => {
   beforeEach(() => {
@@ -12,18 +10,9 @@ describe('Authentication Endpoints', () => {
     vi.clearAllMocks();
   });
 
-  afterAll(async () => {
-    // Close the server after all tests
-    if (server.listening) {
-      return new Promise<void>((resolve) => {
-        server.close((err) => {
-          if (err) {
-            console.error('Error closing server:', err);
-          }
-          resolve();
-        });
-      });
-    }
+  afterAll(() => {
+    // Clean up any resources if needed
+    vi.restoreAllMocks();
   });
 
   describe('User Registration', () => {
@@ -38,7 +27,7 @@ describe('Authentication Endpoints', () => {
       vi.mocked(userService.getUserByEmail).mockResolvedValue(null);
       vi.mocked(userService.createUser).mockResolvedValue(mockUser);
 
-      const response = await request
+      const response = await request(app)
         .post('/api/passkey/register-start')
         .send({ email: 'test@example.com' });
 
@@ -58,7 +47,7 @@ describe('Authentication Endpoints', () => {
 
       vi.mocked(userService.getUserByEmail).mockResolvedValue(existingUser);
 
-      const response = await request
+      const response = await request(app)
         .post('/api/passkey/register-start')
         .send({ email: 'existing@example.com' });
 
@@ -70,7 +59,7 @@ describe('Authentication Endpoints', () => {
     });
 
     it('should handle registration with invalid email', async () => {
-      const response = await request
+      const response = await request(app)
         .post('/api/passkey/register-start')
         .send({ email: 'invalid-email' });
 
@@ -88,7 +77,7 @@ describe('Authentication Endpoints', () => {
 
       vi.mocked(userService.getUserByEmail).mockResolvedValue(existingUser);
 
-      const response = await request
+      const response = await request(app)
         .post('/api/passkey/login-start')
         .send({ email: 'test@example.com' });
 
@@ -101,7 +90,7 @@ describe('Authentication Endpoints', () => {
     it('should handle login attempt with non-existent user', async () => {
       vi.mocked(userService.getUserByEmail).mockResolvedValue(null);
 
-      const response = await request
+      const response = await request(app)
         .post('/api/passkey/login-start')
         .send({ email: 'nonexistent@example.com' });
 

@@ -1,10 +1,8 @@
+// server/src/routes/auth.test.ts
 import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
-import supertest from 'supertest';
+import request from 'supertest';
 import formBasedController from '../controllers/formBasedController.js';
-import app, { server } from '../tests/mockApp.js';
-
-// Create a supertest instance
-const request = supertest(app);
+import app from '../tests/mockApp.js';
 
 describe('Authentication Routes', () => {
   beforeEach(() => {
@@ -12,30 +10,19 @@ describe('Authentication Routes', () => {
     vi.clearAllMocks();
   });
 
-  afterAll(async () => {
-    // Close the server after all tests
-    if (server.listening) {
-      return new Promise<void>((resolve) => {
-        server.close((err) => {
-          if (err) {
-            console.error('Error closing server:', err);
-          }
-          resolve();
-        });
-      });
-    }
+  afterAll(() => {
+    // Clean up any resources if needed
+    vi.restoreAllMocks();
   });
 
   describe('POST /register', () => {
     const validRegistrationData = {
       email: 'test@example.com',
       password: 'Password123!',
-      // firstName: 'John',
-      // lastName: 'Doe',
     };
 
     it('should successfully register a new user', async () => {
-      const response = await request
+      const response = await request(app)
         .post('/api/auth/register')
         .send(validRegistrationData);
 
@@ -64,7 +51,7 @@ describe('Authentication Routes', () => {
         res.status(400).json({ error: 'Invalid email format' });
       });
 
-      const response = await request
+      const response = await request(app)
         .post('/api/auth/register')
         .send(invalidData);
 
@@ -81,7 +68,7 @@ describe('Authentication Routes', () => {
         }
       );
 
-      const response = await request
+      const response = await request(app)
         .post('/api/auth/register')
         .send(validRegistrationData);
 
@@ -98,7 +85,7 @@ describe('Authentication Routes', () => {
     };
 
     it('should successfully log in a user', async () => {
-      const response = await request
+      const response = await request(app)
         .post('/api/auth/login')
         .send(validLoginData);
 
@@ -120,7 +107,7 @@ describe('Authentication Routes', () => {
         }
       );
 
-      const response = await request
+      const response = await request(app)
         .post('/api/auth/login')
         .send(validLoginData);
 
@@ -141,7 +128,9 @@ describe('Authentication Routes', () => {
         }
       );
 
-      const response = await request.post('/api/auth/login').send(invalidData);
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send(invalidData);
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Invalid login data');
@@ -151,7 +140,7 @@ describe('Authentication Routes', () => {
 
   describe('POST /refresh-token', () => {
     it('should issue new tokens with valid refresh token', async () => {
-      const response = await request
+      const response = await request(app)
         .post('/api/auth/refresh-token')
         .set('Cookie', ['refreshToken=valid_refresh_token']);
 
@@ -170,7 +159,7 @@ describe('Authentication Routes', () => {
         res.status(401).json({ error: 'Please login again' });
       });
 
-      const response = await request
+      const response = await request(app)
         .post('/api/auth/refresh-token')
         .set('Cookie', ['refreshToken=invalid_refresh_token']);
 
