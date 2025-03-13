@@ -2,12 +2,6 @@
 
 A comprehensive authentication toolkit supporting both traditional password-based authentication and modern passkeys (WebAuthn).
 
-reference: https://github.com/CodesmithLLC/PRO-README?tab=readme-ov-file
-
-https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
-
-https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks
-
 ## Features
 
 - Dual authentication methods: Passkey (WebAuthn) and traditional passwords
