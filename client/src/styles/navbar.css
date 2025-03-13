@@ -1,0 +1,140 @@
+.navbar {
+  background-color: var(--neutral-100);
+  border-bottom: 1px solid var(--neutral-300);
+  padding: 1rem;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  /* max-width: 1280px; */
+  max-width: 100%; /*added*/
+  /* margin: 0 auto; */
+  margin: 0;
+  /* padding: 0 2rem; */
+  padding: 0 1rem;
+  gap: 2rem;
+}
+
+.brand {
+  margin-right: auto;
+  color: var(--primary-dark);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-item {
+  color: var(--neutral-600);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-item:hover {
+  color: var(--primary-main);
+}
+
+.search-container {
+  position: relative;
+  margin: 0 2rem;
+}
+
+.search-input {
+  width: 300px;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border: 1px solid var(--neutral-300);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--neutral-800);
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--neutral-600);
+}
+
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.github-link {
+  color: var(--neutral-600);
+  transition: color 0.2s ease;
+}
+
+.github-link:hover {
+  color: var(--neutral-800);
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--neutral-600);
+  transition: color 0.2s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--primary-main);
+}
+
+/* Dark mode styles */
+:root[data-theme='dark'] .navbar {
+  background-color: var(--neutral-900);
+  border-bottom: 1px solid var(--neutral-600);
+}
+
+:root[data-theme='dark'] .nav-item {
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .nav-item:hover {
+  color: var(--primary-light);
+}
+
+:root[data-theme='dark'] .theme-toggle {
+  color: var(--neutral-100);
+}
+
+:root[data-theme='dark'] .theme-toggle:hover {
+  color: var(--primary-main);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .search-container {
+    margin: 0 1rem;
+  }
+
+  .search-input {
+    width: 200px;
+  }
+}

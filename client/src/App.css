@@ -1,0 +1,60 @@
+/* App-wide Layout Styles */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Common spacing utility classes */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+/* Common Alert/Message Styles */
+.alert {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.alert-success {
+  background-color: color-mix(in srgb, var(--success) 10%, white);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.alert-error {
+  background-color: color-mix(in srgb, var(--error) 10%, white);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--neutral-600);
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

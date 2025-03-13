@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020"],
+
+    "outDir": "./dist",
+    "rootDir": "./src",
+
+    // Module resolution
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    // Type checking
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    // Additional settings
+    "allowJs": true,
+    "checkJs": true,
+    "sourceMap": true,
+
+    // ES Module specific settings
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+
+    // Path settings for your server structure
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"],
+      "@controllers/*": ["./controllers/*"],
+      "@middlewares/*": ["./middlewares/*"],
+      "@models/*": ["./models/*"],
+      "@routes/*": ["./routes/*"],
+      "@services/*": ["./services/*"],
+      "@utils/*": ["./utils/*"],
+      "@config/*": ["./config/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
